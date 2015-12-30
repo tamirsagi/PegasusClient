@@ -1,14 +1,11 @@
-package Client.pegasusclient.app;
+package Client.pegasusclient.app.UI.Activities;
 
-import android.support.v7.app.AppCompatActivity;
-import UI.Fragments.MainAppPagerAdapter;
+import Client.pegasusclient.app.R;
+import Client.pegasusclient.app.UI.Fragments.MainAppPagerAdapter;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 /**
  * This Class manages the pager elements including pages and tabs
