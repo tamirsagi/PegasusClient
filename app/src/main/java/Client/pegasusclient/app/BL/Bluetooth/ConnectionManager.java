@@ -1,4 +1,4 @@
-package BL.Bluetooth;
+package Client.pegasusclient.app.BL.Bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -11,13 +11,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import BL.Bluetooth.General.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author Tamir Sagi
- *         <p>
  *         This class handle conneciton to remote device
  *         it keeps a inner class which extends a thread to handle the connection read and write
  */
@@ -195,6 +193,7 @@ public class ConnectionManager {
         public ConnectionService(BluetoothDevice remoteDevice, UUID uuidToTry) {
             mRemoteDevice = remoteDevice;
             BluetoothSocket tmp = null;
+
             // Get a BluetoothSocket for a connection with the given BluetoothDevice (secure)
             try {
                 tmp = mRemoteDevice.createInsecureRfcommSocketToServiceRecord(uuidToTry);

@@ -1,30 +1,16 @@
 <resources>
-    <string name="app_name">Pegasus Client</string>
+    <string name="app_name">PegasusClient</string>
 
-    <!--  Bluetooth Activity -->
-    <string name="send">Send</string>
-    <string name="not_connected">You are not connected to a device</string>
-    <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.</string>
-    <string name="title_connecting">connecting...</string>
-    <string name="title_connected_to">connected: </string>
-    <string name="title_not_connected">not connected</string>
+    <!-- Main Screen-->
+    <string name="intro">Welcome To Pegasus Client! The Android App For Autonomous Vehicle!!\nPlease Login First</string>
+    <string name="hint_userName">Enter User Name</string>
+    <string name="hint_userNamePwd">Enter Password</string>
+    <string name="bth_login">Login</string>
 
-    <!--  DeviceListActivity -->
-    <string name="title_activity_devices_list">Select a device to connect</string>
-    <string name="scanning">scanning for devices...</string>
-    <string name="select_device">select a device to connect</string>
-    <string name="none_paired">No devices have been paired</string>
-    <string name="none_found">No devices found</string>
+
+    <!-- Bluetooth-->
     <string name="title_paired_devices">Paired Devices</string>
-    <string name="title_other_devices">Other Available Devices</string>
-    <string name="button_scan">Scan for devices</string>
-
-    <!-- Options Menu -->
-
-    <string name="action_settings">Setting</string>
-    <string name="connect">Connect a device</string>
-    <string name="discoverable">Make discoverable</string>
-    <string name="title_activity_settings">Settings</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="title_other_devices">Other Devices</string>
+    <string name="button_scan">Scan</string>
+    <string name="action_settings">Settings</string>
 </resources>
