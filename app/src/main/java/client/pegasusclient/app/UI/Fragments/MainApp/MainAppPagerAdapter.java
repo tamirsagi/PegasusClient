@@ -1,4 +1,4 @@
-package Client.pegasusclient.app.UI.Fragments;
+package client.pegasusclient.app.UI.Fragments.MainApp;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.view.ViewGroup;
+import client.pegasusclient.app.UI.Fragments.settings.ClientSettings;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -59,17 +60,17 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (PAGES.get(position)) {
             case Settings:
-                break;
-            case Autonomous:
-                break;
-            case Manual_Control:
-                break;
-            case Logs:
-                break;
-            case Camera:
-                break;
-            case Map:
-                break;
+                return ClientSettings.newInstance(position);
+//            case Autonomous:
+//                break;
+//            case Manual_Control:
+//                break;
+//            case Logs:
+//                break;
+//            case Camera:
+//                break;
+//            case Map:
+//                break;
         }
         return new Fragment();
     }

@@ -1,4 +1,4 @@
-package Client.pegasusclient.app.BL.Bluetooth;
+package client.pegasusclient.app.BL.Bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -46,6 +46,7 @@ public class ConnectionManager {
      */
 
     // Constants that indicate the current connection state
+    public static final int STATE_DISCONNECTED = - 1;           //we are disconnected
     public static final int STATE_NONE = 0;                     // we're doing nothing
     public static final int STATE_CONNECTING = 1;               // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;                // now setConnectionManager to a remote device
@@ -102,7 +103,7 @@ public class ConnectionManager {
      *
      * @param remoteDevice The BluetoothDevice to connectToRemoteDevice
      */
-    public void connectToRemoteDevice(BluetoothDevice remoteDevice) {
+    public boolean connectToRemoteDevice(BluetoothDevice remoteDevice) {
         if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
 
         if (mConnectionService != null) {
@@ -113,8 +114,10 @@ public class ConnectionManager {
             mConnectionService = new ConnectionService(remoteDevice, mSharedUUID);
             mConnectionService.start();
             setState(STATE_CONNECTING);
+            return true;
         } catch (Exception e) {
             connectionFailed();
+            return false;
         }
     }
 
@@ -125,7 +128,7 @@ public class ConnectionManager {
         if (debugging)
             Log.d(TAG, "stop");
 
-        setState(STATE_NONE);
+        setState(STATE_DISCONNECTED);
         if (mConnectionService != null) {
             mConnectionService.closeSocket();
             mConnectionService = null;
@@ -143,7 +146,7 @@ public class ConnectionManager {
     private void connectionFailed() {
         if (debugging)
             Log.d(TAG, "connection Failed");
-        setState(STATE_CONNECTING);
+        setState(STATE_DISCONNECTED);
         if (mConnectionService != null) {
             mConnectionService.closeSocket();
             mConnectionService = null;

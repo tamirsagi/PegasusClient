@@ -1,7 +1,6 @@
-package Client.pegasusclient.app.UI.Activities;
+package client.pegasusclient.app.UI.Activities;
 
-import Client.pegasusclient.app.R;
-import Client.pegasusclient.app.UI.Fragments.MainAppPagerAdapter;
+import client.pegasusclient.app.UI.Fragments.MainApp.MainAppPagerAdapter;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;

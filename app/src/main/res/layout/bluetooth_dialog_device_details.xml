@@ -1,0 +1,47 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_height="match_parent"
+                android:background="#263238"
+                android:layout_width="match_parent">
+    <TextView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:gravity="center"
+            android:padding="5dp"
+            android:id="@+id/bluetooth_dialog_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:textColor="#000"
+            android:text="@string/bluetooth_device_name">
+
+    </TextView>
+    <TextView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:gravity="center"
+            android:padding="5dp"
+            android:id="@+id/bluetooth_dialog_device_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:text="@string/bluetooth_device_address"
+            android:textColor="#000"
+            android:layout_alignParentTop="true" android:layout_centerHorizontal="true">
+
+    </TextView>
+
+    <TextView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:gravity="center"
+            android:padding="5dp"
+            android:id="@+id/bluetooth_dialog_device_signal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:text="@string/bluetooth_device_signal"
+            android:textColor="#000"
+            android:layout_alignParentTop="true" android:layout_alignParentEnd="true">
+
+    </TextView>
+
+
+</RelativeLayout>
+        <!--android:soundEffectsEnabled="false"-->

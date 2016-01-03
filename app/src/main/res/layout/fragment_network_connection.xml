@@ -1,0 +1,278 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#263238"
+        android:id="@+id/setting_network_connection">
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:id="@+id/progressBar"
+                    android:indeterminate="true"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:layout_alignBottom="@+id/local_name_separator"
+                    android:layout_toEndOf="@+id/setting_bluetooth_remote_device_signal"/>
+
+            <ImageButton
+                    android:id="@+id/setting_connection_refresh_icon"
+                    android:layout_gravity="center"
+                    android:layout_width="50dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/settings_network_connections_refresh_icon"
+                    android:layout_alignParentTop="true" android:layout_toEndOf="@+id/title_separator"/>
+
+            <ImageView
+                    android:id="@+id/setting_connection_bt_title_icon"
+                    android:layout_gravity="center"
+                    android:layout_width="100dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/setting_bt_icon2"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_title"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_titles"
+                    android:text="@string/title_bluetooth"
+                    android:textColor="#BCAAA4"
+                    android:layout_above="@+id/title_separator"
+                    android:layout_toEndOf="@+id/setting_connection_bt_title_icon"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/title_separator"
+                    android:layout_below="@+id/setting_connection_bt_title_icon"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="15dp"/>
+
+
+
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_status"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/setting_connections_bluetooth_status"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/title_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_status_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_status"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/status_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_status_context"/>
+
+            <ImageButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:visibility="gone"
+                    android:id="@+id/setting_bluetooth_enable_bth"
+                    android:layout_above="@+id/setting_bluetooth_local_device_name"
+                    android:layout_toStartOf="@+id/setting_connection_bt_discover_icon"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_local_device_name"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/settings_connection_bluetooth_local_name"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/status_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_local_device_name_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_local_device_name"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/local_name_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_local_device_name_context"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_local_device_address"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/settings_connection_bluetooth_local_address"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/local_name_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_local_device_address_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_local_device_address"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/local_address_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_local_device_address_context"/>
+
+            <ImageButton
+                    android:id="@+id/setting_connection_bt_discover_icon"
+                    android:layout_gravity="center"
+                    android:layout_width="30dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/bluetooth_discover_icon"
+                    android:layout_above="@+id/remote_name_separator"
+                    android:layout_alignEnd="@+id/remote_name_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_name"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/settings_connection_bluetooth_remote_name"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/local_address_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_name_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_name"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/remote_name_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_name_context"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_address"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/settings_connection_bluetooth_remote_address"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/remote_name_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_address_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_address"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/remote_address_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_address_context"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_signal"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_title"
+                    android:text="@string/settings_connection_bluetooth_remote_signal"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/remote_address_separator"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <TextView
+                    android:id="@+id/setting_bluetooth_remote_device_signal_context"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/settings_params_context"
+                    android:text="@string/settings_value_unknown"
+                    android:textColor="#FFFFFFFF"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_signal"
+                    android:layout_alignStart="@+id/title_separator"/>
+
+            <View
+                    android:layout_width="450dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:id="@+id/remote_signal_separator"
+                    android:layout_marginTop="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/setting_bluetooth_remote_device_signal_context"/>
+
+
+        </RelativeLayout>
+    </ScrollView>
+</LinearLayout>

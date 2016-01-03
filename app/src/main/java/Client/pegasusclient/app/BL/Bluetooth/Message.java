@@ -1,4 +1,4 @@
-package Client.pegasusclient.app.BL.Bluetooth;
+package client.pegasusclient.app.BL.Bluetooth;
 
 /**
  * Created by Administrator on 12/19/2015.

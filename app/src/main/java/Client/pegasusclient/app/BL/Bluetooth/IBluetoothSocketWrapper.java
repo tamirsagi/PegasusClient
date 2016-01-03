@@ -1,4 +1,4 @@
-package Client.pegasusclient.app.BL.Bluetooth;
+package client.pegasusclient.app.BL.Bluetooth;
 
 import android.bluetooth.BluetoothSocket;
 
