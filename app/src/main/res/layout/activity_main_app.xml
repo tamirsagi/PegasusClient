@@ -1,44 +1,54 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                tools:context=".MainApp">
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#263238"
+        android:id="@+id/main_app_login"
+        android:layout_width="match_parent">
 
-    <TextView
-            android:text="@string/intro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/textView"
-            android:layout_marginBottom="36dp"
-            android:layout_above="@+id/userName"
-            android:textSize="20dp"
-    />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    tools:context=".MainApp">
 
-    <EditText
-            android:id="@+id/userName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_userName"
-            android:ems="10" android:layout_centerVertical="true" android:layout_alignStart="@+id/userNamePwd">
-    </EditText>
+        <TextView
+                android:text="@string/intro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/textView"
+                android:layout_marginBottom="36dp"
+                android:layout_above="@+id/userName"
+                android:textSize="20dp"
+        />
 
-    <EditText
-            android:id="@+id/userNamePwd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:hint="@string/hint_userNamePwd"
-            android:ems="10" android:layout_below="@+id/userName" android:layout_centerHorizontal="true">
-    </EditText>
+        <EditText
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_userName"
+                android:ems="10" android:layout_centerVertical="true" android:layout_alignStart="@+id/userNamePwd">
+        </EditText>
 
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text= "@string/bth_login"
-            android:onClick="onButtonLoginClick"
-            android:id="@+id/button"
-            android:layout_below="@+id/userNamePwd"
-            android:layout_centerHorizontal="true"/>
+        <EditText
+                android:id="@+id/userNamePwd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:hint="@string/hint_userNamePwd"
+                android:ems="10" android:layout_below="@+id/userName" android:layout_centerHorizontal="true">
+        </EditText>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bth_login"
+                android:onClick="onButtonLoginClick"
+                android:id="@+id/button"
+                android:layout_below="@+id/userNamePwd"
+                android:layout_centerHorizontal="true"/>
 
 
-</RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>

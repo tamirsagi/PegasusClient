@@ -61,6 +61,7 @@ public class SettingsRecyclerAdapter extends RecyclerView.Adapter<SettingsRecycl
             super(itemView);
             tv_Title = (TextView) itemView.findViewById(R.id.setting_title);
             iv_Icon = (ImageView) itemView.findViewById(R.id.setting_title_icon);
+
         }
 
         @Override

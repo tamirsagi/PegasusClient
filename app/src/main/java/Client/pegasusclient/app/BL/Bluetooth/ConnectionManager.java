@@ -107,8 +107,7 @@ public class ConnectionManager {
         if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
 
         if (mConnectionService != null) {
-            mConnectionService.closeSocket();
-            mConnectionService = null;
+            disconnectFromRemoteDevice();
         }
         try {
             mConnectionService = new ConnectionService(remoteDevice, mSharedUUID);
@@ -126,7 +125,7 @@ public class ConnectionManager {
      */
     public void disconnectFromRemoteDevice() {
         if (debugging)
-            Log.d(TAG, "stop");
+            Log.d(TAG, "disconnect FromRemote Device");
 
         setState(STATE_DISCONNECTED);
         if (mConnectionService != null) {

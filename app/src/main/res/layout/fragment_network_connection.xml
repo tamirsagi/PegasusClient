@@ -36,7 +36,7 @@
                     android:layout_gravity="center"
                     android:layout_width="100dp"
                     android:layout_height="70dp"
-                    android:src="@drawable/setting_bt_icon2"
+                    android:src="@drawable/setting_bt_icon"
                     android:layout_alignParentTop="true"
                     android:layout_alignStart="@+id/title_separator"/>
 
@@ -96,12 +96,12 @@
                     android:layout_below="@+id/setting_bluetooth_status_context"/>
 
             <ImageButton
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:visibility="gone"
+                    android:background="@null"
                     android:id="@+id/setting_bluetooth_enable_bth"
-                    android:layout_above="@+id/setting_bluetooth_local_device_name"
-                    android:layout_toStartOf="@+id/setting_connection_bt_discover_icon"/>
+                    android:layout_alignTop="@+id/title_separator" android:layout_alignEnd="@+id/title_separator"/>
 
             <TextView
                     android:id="@+id/setting_bluetooth_local_device_name"
@@ -170,11 +170,12 @@
             <ImageButton
                     android:id="@+id/setting_connection_bt_discover_icon"
                     android:layout_gravity="center"
-                    android:layout_width="30dp"
-                    android:layout_height="35dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/bluetooth_discover_icon"
-                    android:layout_above="@+id/remote_name_separator"
-                    android:layout_alignEnd="@+id/remote_name_separator"/>
+                    android:layout_marginEnd="44dp"
+                    android:layout_below="@+id/progressBar"
+                    android:layout_toStartOf="@+id/setting_connection_refresh_icon"/>
 
             <TextView
                     android:id="@+id/setting_bluetooth_remote_device_name"

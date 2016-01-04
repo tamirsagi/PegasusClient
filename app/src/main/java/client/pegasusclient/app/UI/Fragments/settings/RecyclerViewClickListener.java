@@ -1,9 +1,9 @@
 package client.pegasusclient.app.UI.Fragments.settings;
 
-import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 
 /**
- * Created by Administrator on 1/2/2016.
+ * @author  Tamir Sagi
+ * this interface is setting cecycler list to detect when item is clicked
  */
 public interface RecyclerViewClickListener {
 

@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.view.ViewGroup;
 import client.pegasusclient.app.UI.Fragments.settings.ClientSettings;
+import client.pegasusclient.app.UI.Fragments.settings.Connections.Bluetooth.MainBluetoothFragment;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -60,7 +61,8 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (PAGES.get(position)) {
             case Settings:
-                return ClientSettings.newInstance(position);
+                //return ClientSettings.newInstance(position);
+                return new MainBluetoothFragment();
 //            case Autonomous:
 //                break;
 //            case Manual_Control:

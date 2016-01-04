@@ -1,5 +1,6 @@
 package client.pegasusclient.app.UI.Fragments.settings.Connections.Bluetooth;
 
+import android.view.View;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 
 /**
@@ -11,7 +12,7 @@ public interface BluetoothDevicesListListener {
      * get the bluetooth device to connect
      * @param btDeviceAddress - bluetooth mac address
      */
-    void getBluetoothDeviceToConnect(String btDeviceAddress);
+    void getBluetoothDeviceToConnect(View v, String btDeviceAddress);
 
 
 }

@@ -46,6 +46,10 @@ public class MainBluetoothFragment extends Fragment {
     private ImageButton mStatusButton;
     private ProgressBar mLoading;
 
+    private boolean isBluetoothEnabled;
+    private boolean requestDiscoverable;
+    private boolean isRegisteredToBroadcastReceiver;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,13 +62,13 @@ public class MainBluetoothFragment extends Fragment {
 
         root = inflater.inflate(R.layout.fragment_network_connection, container, false);
         mLoading = (ProgressBar)root.findViewById(R.id.progressBar);
-
+        mBluetoothStatus = (TextView) root.findViewById(R.id.setting_bluetooth_status_context);
         // If the adapter is null, then Bluetooth is not supported
         if (ConnectionManager.getConnectionServiceInstance().getAdapter() == null) {
-            mBluetoothStatus = (TextView) root.findViewById(R.id.setting_bluetooth_status_context);
             mBluetoothStatus.setText(getResources().getString(R.string.settings_value_not_supported));
             changeLayoutChildrenState(false);
         } else {
+
             mRefresh = (ImageButton) root.findViewById(R.id.setting_connection_refresh_icon);
             mOtherDevices = (ImageButton) root.findViewById(R.id.setting_connection_bt_discover_icon);
             mStatusButton = (ImageButton) root.findViewById(R.id.setting_bluetooth_enable_bth);
@@ -77,13 +81,19 @@ public class MainBluetoothFragment extends Fragment {
             mOtherDevices.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //in case the phone is not discoverable
-                    if (ConnectionManager.getConnectionServiceInstance().getAdapter().getScanMode() !=
-                            BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                        ensureDiscoverable();
-                    } else {
-                        showOtherBluetoothDevices();
+                    requestDiscoverable = true;
+                    isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
+                    if (isBluetoothEnabled) {
+                        //in case the phone is not discoverable
+                        if (ConnectionManager.getConnectionServiceInstance().getAdapter().getScanMode() !=
+                                BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                            ensureDiscoverable();
+                        } else {
+                            showOtherBluetoothDevices();
+                        }
                     }
+                    else
+                        ensureBluetoothEnabled();
                 }
             });
 
@@ -95,10 +105,9 @@ public class MainBluetoothFragment extends Fragment {
             });
 
             // If BT is not on, request that it be enabled.
-            boolean isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
+            isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
             setDeviceState(isBluetoothEnabled);
         }
-
 
         return root;
     }
@@ -115,7 +124,23 @@ public class MainBluetoothFragment extends Fragment {
         super.onStart();
         if (debugging) Log.e(TAG, "++ ON START ++");
 
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // If BT is not on, request that it be enabled.
+        isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
+        setDeviceState(isBluetoothEnabled);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(isRegisteredToBroadcastReceiver) {
+            getActivity().unregisterReceiver(bluetoothState);   //unregister from the broadcast receiver
+            isRegisteredToBroadcastReceiver = false;
+        }
     }
 
     @Override
@@ -123,6 +148,7 @@ public class MainBluetoothFragment extends Fragment {
         super.onDestroy();
         if (debugging)
             Log.e(TAG, "++ ON Destroy ++");
+        requestDiscoverable = false;
 
     }
 
@@ -153,8 +179,7 @@ public class MainBluetoothFragment extends Fragment {
                     break;
                 }
                 case BluetoothAdapter.STATE_ON: {
-                    mBluetoothStatus.setText(getResources().getString(R.string.settings_value_enable));
-                    mOtherDevices.setEnabled(true);
+                    setDeviceState(true);
                     mLoading.setVisibility(View.GONE);
                     break;
                 }
@@ -176,6 +201,7 @@ public class MainBluetoothFragment extends Fragment {
         String actionRequestEnable = BluetoothAdapter.ACTION_REQUEST_ENABLE;
         IntentFilter filter = new IntentFilter(actionStateChanged);
         getActivity().registerReceiver(bluetoothState, filter);
+        isRegisteredToBroadcastReceiver = true;
         startActivityForResult(new Intent(actionRequestEnable), REQUEST_ENABLE_BT);
     }
 
@@ -196,7 +222,8 @@ public class MainBluetoothFragment extends Fragment {
     private void showOtherBluetoothDevices() {
         DevicesListDialog dialogFrag = DevicesListDialog.newInstance();
         dialogFrag.setTargetFragment(this, REQUEST_CONNECT_DEVICE);
-        dialogFrag.show(getFragmentManager().beginTransaction(), "DevicesListDialog");
+        dialogFrag.show(getFragmentManager(), DevicesListDialog.TAG);
+        requestDiscoverable = false;
     }
 
 
@@ -206,7 +233,8 @@ public class MainBluetoothFragment extends Fragment {
         switch (requestCode) {
             case REQUEST_ENABLE_BT:
                 if (resultCode == Activity.RESULT_OK) {
-//
+                    if(requestDiscoverable)
+                        ensureDiscoverable();
                 }
                 break;
             case DISCOVERY_REQUEST:
@@ -265,5 +293,8 @@ public class MainBluetoothFragment extends Fragment {
         mOtherDevices.setEnabled(isEnabled);
         mStatusButton.setVisibility(View.VISIBLE);
     }
+
+
+
 
 }//end of class

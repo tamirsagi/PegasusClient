@@ -74,6 +74,7 @@ public class ClientSettings extends Fragment implements RecyclerViewClickListene
 
         root = inflater.inflate(R.layout.client_settings, container, false);
         setSettingsList(root);
+
         return root;
     }
 
@@ -101,8 +102,8 @@ public class ClientSettings extends Fragment implements RecyclerViewClickListene
 
 
     private void showRelevantSettingFragment(Fragment newFragment){
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.setting_container, newFragment); // f1_container is your FrameLayout container
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+        ft.replace(R.id.setting_container, newFragment); //     setting_container is your FrameLayout container
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         ft.addToBackStack(null);
         ft.commit();
