@@ -46,7 +46,7 @@ public class ConnectionManager {
      */
 
     // Constants that indicate the current connection state
-    public static final int STATE_DISCONNECTED = - 1;           //we are disconnected
+    public static final int STATE_DISCONNECTED = -1;           //we are disconnected
     public static final int STATE_NONE = 0;                     // we're doing nothing
     public static final int STATE_CONNECTING = 1;               // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;                // now setConnectionManager to a remote device
@@ -57,6 +57,7 @@ public class ConnectionManager {
     private ConnectionManager() {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
+        mConnectionService = new ConnectionService();
     }
 
     public static ConnectionManager getConnectionServiceInstance() {
@@ -73,9 +74,6 @@ public class ConnectionManager {
         mHandler = handler;
     }
 
-    public BluetoothAdapter getBluetoothAdapter() {
-        return mAdapter;
-    }
 
     /**
      * Set the current state of the chat connection
@@ -87,8 +85,6 @@ public class ConnectionManager {
             Log.d(TAG, "setState() " + mState + " -> " + state);
 
         mState = state;
-        // Give the new state to the Handler so the UI Activity can update
-//        mHandler.obtainMessage(BluetoothActivity.MESSAGE_STATE_CHANGE, state, STATE_NONE).sendToTarget();
     }
 
     /**
@@ -105,17 +101,15 @@ public class ConnectionManager {
      */
     public boolean connectToRemoteDevice(BluetoothDevice remoteDevice) {
         if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
-
-        if (mConnectionService != null) {
-            disconnectFromRemoteDevice();
-        }
+        if (mConnectionService.isConnected())
+            disconnectFromRemoteDevice();           //if socket is exist disconnect from it
         try {
-            mConnectionService = new ConnectionService(remoteDevice, mSharedUUID);
-            mConnectionService.start();
             setState(STATE_CONNECTING);
+            mConnectionService.connectToRemoteDevice(remoteDevice, mSharedUUID);
+            mConnectionService.start();             //start the thread to handle socket
             return true;
         } catch (Exception e) {
-            connectionFailed();
+            Log.e(TAG,e.getMessage());
             return false;
         }
     }
@@ -126,7 +120,6 @@ public class ConnectionManager {
     public void disconnectFromRemoteDevice() {
         if (debugging)
             Log.d(TAG, "disconnect FromRemote Device");
-
         setState(STATE_DISCONNECTED);
         if (mConnectionService != null) {
             mConnectionService.closeSocket();
@@ -177,6 +170,25 @@ public class ConnectionManager {
 
 
     /**
+     * Check whether we are connected to remote device or not
+     *
+     * @return
+     */
+    public boolean isConnectedToRemoteDevice() {
+        if (mConnectionService != null)
+            return mConnectionService.isConnected();
+        return false;
+    }
+
+    /**
+     * @return remote bluetooth device
+     */
+    public BluetoothDevice getRemoteBluetoothDevice() {
+        return mConnectionService.getRemoteBluetoothDevice();
+    }
+
+
+    /**
      *     Handle connection is a separate Thread
      */
 
@@ -188,24 +200,29 @@ public class ConnectionManager {
      */
     private class ConnectionService extends Thread {
 
-        private final BluetoothDevice mRemoteDevice;    //remote device which we connect to
-        private boolean connected = false;
+        private BluetoothDevice mRemoteDevice;    //remote device which we connect to
         private IBluetoothSocketWrapper bluetoothSocket;
+        private UUID mUUID;
 
-        public ConnectionService(BluetoothDevice remoteDevice, UUID uuidToTry) {
+        /**
+         * Connect to Bluetooth Device
+         * @param remoteDevice
+         * @param uuidToTry
+         * @return whether succeed or not
+         */
+        public void connectToRemoteDevice(BluetoothDevice remoteDevice, UUID uuidToTry) throws IOException {
             mRemoteDevice = remoteDevice;
             BluetoothSocket tmp = null;
-
-            // Get a BluetoothSocket for a connection with the given BluetoothDevice (secure)
             try {
+                // Get a BluetoothSocket for a connection with the given BluetoothDevice (Insecure)
                 tmp = mRemoteDevice.createInsecureRfcommSocketToServiceRecord(uuidToTry);
+
             } catch (IOException e) {
                 Log.e(TAG, "create() failed", e);
             }
             bluetoothSocket = new NativeBluetoothSocket(tmp);
-        }
+            mUUID = uuidToTry;
 
-        public void run() {
             Log.i(TAG, "BEGIN mConnectThread");
             setName("ConnectThread");
             if (bluetoothSocket.getSocket() != null)
@@ -213,25 +230,15 @@ public class ConnectionManager {
                 mAdapter.cancelDiscovery();
             try {
                 connectToSocket();
+                setState(STATE_CONNECTED);
             } catch (IOException e) {
                 Log.e(TAG, e.getMessage());
-                try {
-                    setFallBackSocket(bluetoothSocket.getSocket());
-                    connectToSocket();
-                } catch (IOException e1) {
-                    connectionFailed();
-
-                    try {
-                        bluetoothSocket.close();
-                    } catch (IOException e2) {
-                        Log.e(TAG, General.OnCloseClientConnectionFailed + "msg : " + e2.getMessage());
-                    }
-                    return;
-                }
+                throw new IOException(TAG + " Could not connect to Socket",e);
             }
-            //updateActivity(General.MessageType.INFO, mRemoteDevice.getName());
-            setState(STATE_CONNECTED);
+        }
 
+        @Override
+        public void run() {
             while (bluetoothSocket.isConnected()) {
                 try {
                     readFromSocket();
@@ -243,7 +250,9 @@ public class ConnectionManager {
                     e.printStackTrace();
                 }
             }
-        }//end of run method
+        }
+
+
 
         /**
          * Connect to current soccket and save input and output streams
@@ -253,7 +262,7 @@ public class ConnectionManager {
         private void connectToSocket() throws IOException {
             // This is a blocking call and will only return on a exception
             bluetoothSocket.connect();// Create a connection to the BluetoothSocket
-            //after we connect, set input and output stream
+
         }
 
         /**
@@ -294,35 +303,51 @@ public class ConnectionManager {
          */
         public void closeSocket() {
             try {
-                if (connected)
+                if (isConnected())
                     bluetoothSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, General.OnCloseSocketFailed, e);
             }
         }
 
-        /**
-         * when I receive that exception, I instantiate a fallback BluetoothSocket,
-         * As you can see, invoking the hidden method createRfcommSocket via reflections.
-         *
-         * @param current - current Socket
-         */
-        public void setFallBackSocket(BluetoothSocket current) {
-            try {
-                Class<?> clazz = current.getRemoteDevice().getClass();
-                Class<?>[] paramTypes = new Class<?>[]{Integer.TYPE};
-                Method m = clazz.getMethod("createRfcommSocket", paramTypes);
-                Object[] params = new Object[]{Integer.valueOf(1)};
-                bluetoothSocket = (IBluetoothSocketWrapper) m.invoke(current.getRemoteDevice(), params);
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+//        /**
+//         * when I receive that exception, I instantiate a fallback BluetoothSocket,
+//         * As you can be seen, invoking the hidden method createRfcommSocket via reflections.
+//         *
+//         * @param current - current Socket
+//         */
+//        public void setFallBackSocket(BluetoothSocket current) {
+//            try {
+//                Class<?> clazz = current.getRemoteDevice().getClass();
+//                Class<?>[] paramTypes = new Class<?>[]{Integer.TYPE};
+//                Method m = clazz.getMethod("createRfcommSocket", paramTypes);
+//                Object[] params = new Object[]{Integer.valueOf(1)};
+//                bluetoothSocket = (IBluetoothSocketWrapper) m.invoke(current.getRemoteDevice(), params);
+//            } catch (NoSuchMethodException e) {
+//                e.printStackTrace();
+//            } catch (IllegalAccessException e) {
+//                e.printStackTrace();
+//            } catch (InvocationTargetException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
+        /**
+         * @return connection state
+         */
+        public boolean isConnected() {
+            if(bluetoothSocket != null)
+                return bluetoothSocket.isConnected();
+            return false;
         }
+
+        /**
+         * @return the remote device we are connected to
+         */
+        public BluetoothDevice getRemoteBluetoothDevice() {
+            return mRemoteDevice;
+        }
+
     }
 
 

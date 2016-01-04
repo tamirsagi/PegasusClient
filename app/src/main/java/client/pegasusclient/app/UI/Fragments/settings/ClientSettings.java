@@ -95,7 +95,7 @@ public class ClientSettings extends Fragment implements RecyclerViewClickListene
     public void getClickedItemPosition(int position) {
         switch(Settings.get(position)){
             case NetworkConnection:
-                showRelevantSettingFragment(new MainBluetoothFragment());
+                showRelevantSettingFragment( MainBluetoothFragment.newInstance());
                 break;
         }
     }

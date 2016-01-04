@@ -1,11 +1,15 @@
 package client.pegasusclient.app.UI.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
 public class MainApp extends AppCompatActivity {
+
+    public  static final String KEY_SHARED_PREFERNCES_NAME = "Pegasus Client Preferences";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

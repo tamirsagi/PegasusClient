@@ -1,14 +1,13 @@
 package client.pegasusclient.app.UI.Fragments.settings.Connections.Bluetooth;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.widget.*;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 import client.pegasusclient.app.BL.Bluetooth.ConnectionManager;
 import client.pegasusclient.app.BL.Bluetooth.General;
+import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
 
 
@@ -26,6 +26,9 @@ public class MainBluetoothFragment extends Fragment {
     private static final String TAG = "BluetoothActivity";
     private static final boolean debugging = true;
 
+    private static final String KEY_REMOTE_NAME = "Remote Device Name";
+    private static final String KEY_REMOTE_ADDRESS = "Remote Device Address";
+    private static final String KEY_REMOTE_SIGNAL = "Remote Device Signal";
 
     // Intent request codes
     public static final int NONE = -1;
@@ -50,18 +53,25 @@ public class MainBluetoothFragment extends Fragment {
     private boolean requestDiscoverable;
     private boolean isRegisteredToBroadcastReceiver;
 
+    private SharedPreferences mSharedPreferences;
+
+
+    public static MainBluetoothFragment newInstance() {
+        MainBluetoothFragment mbf = new MainBluetoothFragment();
+        return mbf;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         root = inflater.inflate(R.layout.fragment_network_connection, container, false);
-        mLoading = (ProgressBar)root.findViewById(R.id.progressBar);
+        mSharedPreferences = getActivity().getSharedPreferences(MainApp.KEY_SHARED_PREFERNCES_NAME,Context.MODE_PRIVATE);
+        mLoading = (ProgressBar) root.findViewById(R.id.progressBar);
         mBluetoothStatus = (TextView) root.findViewById(R.id.setting_bluetooth_status_context);
         // If the adapter is null, then Bluetooth is not supported
         if (ConnectionManager.getConnectionServiceInstance().getAdapter() == null) {
@@ -74,9 +84,19 @@ public class MainBluetoothFragment extends Fragment {
             mStatusButton = (ImageButton) root.findViewById(R.id.setting_bluetooth_enable_bth);
             mLocalDeviceName = (TextView) root.findViewById(R.id.setting_bluetooth_local_device_name_context);
             mLocalDeviceAddress = (TextView) root.findViewById(R.id.setting_bluetooth_local_device_address_context);
-
             mRemoteDeviceName = (TextView) root.findViewById(R.id.setting_bluetooth_remote_device_name_context);
             mRemoteDeviceAddress = (TextView) root.findViewById(R.id.setting_bluetooth_remote_device_address_context);
+
+            // If BT is not on, request that it be enabled.
+            isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
+            setDeviceState(isBluetoothEnabled);
+
+            //If bluetooth is enabled and we are connected to the same one
+            if (isBluetoothEnabled && stillConnectedToLastKnownDevice()) {
+                mRemoteDeviceName.setText(getStringFromSharedPreferences(KEY_REMOTE_NAME));
+                mRemoteDeviceAddress.setText(getStringFromSharedPreferences(KEY_REMOTE_ADDRESS));
+            }
+
 
             mOtherDevices.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -91,8 +111,7 @@ public class MainBluetoothFragment extends Fragment {
                         } else {
                             showOtherBluetoothDevices();
                         }
-                    }
-                    else
+                    } else
                         ensureBluetoothEnabled();
                 }
             });
@@ -104,9 +123,7 @@ public class MainBluetoothFragment extends Fragment {
                 }
             });
 
-            // If BT is not on, request that it be enabled.
-            isBluetoothEnabled = ConnectionManager.getConnectionServiceInstance().getAdapter().isEnabled();
-            setDeviceState(isBluetoothEnabled);
+
         }
 
         return root;
@@ -116,6 +133,20 @@ public class MainBluetoothFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+    }
+
+    /**
+     * check whether we are still connected to the last known device we were connected
+     *
+     * @return true if we are connected to the same device, no otherwise
+     */
+    private boolean stillConnectedToLastKnownDevice() {
+        boolean answer = false;
+        if (ConnectionManager.getConnectionServiceInstance().isConnectedToRemoteDevice()) {
+            BluetoothDevice remote = ConnectionManager.getConnectionServiceInstance().getRemoteBluetoothDevice();
+            answer = remote.getAddress().equals(getStringFromSharedPreferences(KEY_REMOTE_ADDRESS));
+        }
+        return answer;
     }
 
 
@@ -137,7 +168,7 @@ public class MainBluetoothFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if(isRegisteredToBroadcastReceiver) {
+        if (isRegisteredToBroadcastReceiver) {
             getActivity().unregisterReceiver(bluetoothState);   //unregister from the broadcast receiver
             isRegisteredToBroadcastReceiver = false;
         }
@@ -158,6 +189,7 @@ public class MainBluetoothFragment extends Fragment {
      *
      * @param toastMsg
      */
+
     private void showToastMessage(String toastMsg) {
         Toast.makeText(getActivity(), toastMsg, Toast.LENGTH_LONG).show();
     }
@@ -233,7 +265,7 @@ public class MainBluetoothFragment extends Fragment {
         switch (requestCode) {
             case REQUEST_ENABLE_BT:
                 if (resultCode == Activity.RESULT_OK) {
-                    if(requestDiscoverable)
+                    if (requestDiscoverable)
                         ensureDiscoverable();
                 }
                 break;
@@ -252,9 +284,29 @@ public class MainBluetoothFragment extends Fragment {
                     BluetoothDeviceInfo device = new BluetoothDeviceInfo(remoteDevice, 0);
                     mRemoteDeviceName.setText(device.getName());
                     mRemoteDeviceAddress.setText(device.getAddress());
+                    saveToPreferences(KEY_REMOTE_NAME,device.getName());
+                    saveToPreferences(KEY_REMOTE_ADDRESS,device.getAddress());
                 }
+                else
+                    showAlertDialog(remoteDevice.getName());
                 break;
         }
+    }
+
+    /**
+     * Save last device both name and address
+     */
+    private void saveToPreferences(String key, String value) {
+        mSharedPreferences.edit().putString(key, value);
+        mSharedPreferences.edit().apply();
+    }
+
+
+    private String getStringFromSharedPreferences(String key) {
+        if(mSharedPreferences.contains(key))
+            return mSharedPreferences.getString(key,getResources().getString(R.string.settings_value_unknown));
+
+        return getResources().getString(R.string.settings_value_unknown);
     }
 
     /**
@@ -294,7 +346,24 @@ public class MainBluetoothFragment extends Fragment {
         mStatusButton.setVisibility(View.VISIBLE);
     }
 
-
+    /**
+     * show alert message when could not connect to remote device
+     * @param deviceName
+     */
+    private void showAlertDialog(String deviceName){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Dialog));
+        builder.setTitle("Connection Error");
+        builder.setMessage(deviceName + " Is Not Available");
+        builder.setIcon(R.drawable.bluetooth_disable_icon);
+        builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alertdialog = builder.create();
+        alertdialog.show();
+    }
 
 
 }//end of class

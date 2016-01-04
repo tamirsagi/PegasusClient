@@ -3,6 +3,7 @@ package client.pegasusclient.app.BL.Bluetooth;
 import android.bluetooth.BluetoothSocket;
 
 import java.io.*;
+import java.net.Socket;
 
 /**
  * @author  Tamir Sagi
@@ -49,7 +50,9 @@ public class NativeBluetoothSocket implements IBluetoothSocketWrapper {
 
     @Override
     public boolean isConnected(){
-        return socket.isConnected();
+        if(socket != null)
+            return socket.isConnected();
+        return false;
     }
 
     @Override

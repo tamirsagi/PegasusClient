@@ -27,6 +27,7 @@ import java.util.Set;
 
 /**
  * @author Tamir Sagi
+ * this class is a bluetooh devices dialog. it shows paired and new devices around using bluetooth adapter
  */
 public class DevicesListDialog extends DialogFragment implements BluetoothDevicesListListener{
 

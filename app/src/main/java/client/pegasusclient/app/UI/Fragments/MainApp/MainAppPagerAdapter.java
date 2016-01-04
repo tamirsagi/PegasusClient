@@ -62,7 +62,7 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
         switch (PAGES.get(position)) {
             case Settings:
                 //return ClientSettings.newInstance(position);
-                return new MainBluetoothFragment();
+                return MainBluetoothFragment.newInstance();
 //            case Autonomous:
 //                break;
 //            case Manual_Control:
