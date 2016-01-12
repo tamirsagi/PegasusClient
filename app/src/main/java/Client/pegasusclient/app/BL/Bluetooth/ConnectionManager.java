@@ -252,11 +252,8 @@ public class ConnectionManager {
             }
         }
 
-
-
         /**
          * Connect to current soccket and save input and output streams
-         *
          * @throws IOException
          */
         private void connectToSocket() throws IOException {
@@ -267,7 +264,6 @@ public class ConnectionManager {
 
         /**
          * Read from the InputStream
-         *
          * @throws IOException
          */
         public void readFromSocket() throws IOException, JSONException {
@@ -285,14 +281,12 @@ public class ConnectionManager {
 
         /**
          * Write to the setConnectionManager OutStream.
-         *
          * @param msg The bytes to writeToSocket
          */
         public void writeToSocket(String msg) {
             try {
                 bluetoothSocket.getOutputStream().write(msg.getBytes());
-                // Share the sent message back to the UI Activity
-                //mHandler.obtainMessage(BluetoothActivity.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
+                // TODO -  Share the sent message back to the UI Activity
             } catch (Exception e) {
                 Log.e(TAG, General.OnWriteToSocketFailed, e);
             }
@@ -310,28 +304,6 @@ public class ConnectionManager {
             }
         }
 
-//        /**
-//         * when I receive that exception, I instantiate a fallback BluetoothSocket,
-//         * As you can be seen, invoking the hidden method createRfcommSocket via reflections.
-//         *
-//         * @param current - current Socket
-//         */
-//        public void setFallBackSocket(BluetoothSocket current) {
-//            try {
-//                Class<?> clazz = current.getRemoteDevice().getClass();
-//                Class<?>[] paramTypes = new Class<?>[]{Integer.TYPE};
-//                Method m = clazz.getMethod("createRfcommSocket", paramTypes);
-//                Object[] params = new Object[]{Integer.valueOf(1)};
-//                bluetoothSocket = (IBluetoothSocketWrapper) m.invoke(current.getRemoteDevice(), params);
-//            } catch (NoSuchMethodException e) {
-//                e.printStackTrace();
-//            } catch (IllegalAccessException e) {
-//                e.printStackTrace();
-//            } catch (InvocationTargetException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         /**
          * @return connection state
          */
@@ -347,6 +319,29 @@ public class ConnectionManager {
         public BluetoothDevice getRemoteBluetoothDevice() {
             return mRemoteDevice;
         }
+
+
+        /**
+         //         * when I receive that exception, I instantiate a fallback BluetoothSocket,
+         //         * As you can be seen, invoking the hidden method createRfcommSocket via reflections.
+         //         *
+         //         * @param current - current Socket
+         //         */
+//        public void setFallBackSocket(BluetoothSocket current) {
+//            try {
+//                Class<?> clazz = current.getRemoteDevice().getClass();
+//                Class<?>[] paramTypes = new Class<?>[]{Integer.TYPE};
+//                Method m = clazz.getMethod("createRfcommSocket", paramTypes);
+//                Object[] params = new Object[]{Integer.valueOf(1)};
+//                bluetoothSocket = (IBluetoothSocketWrapper) m.invoke(current.getRemoteDevice(), params);
+//            } catch (NoSuchMethodException e) {
+//                e.printStackTrace();
+//            } catch (IllegalAccessException e) {
+//                e.printStackTrace();
+//            } catch (InvocationTargetException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
     }
 

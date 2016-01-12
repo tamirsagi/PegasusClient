@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.view.ViewGroup;
+import client.pegasusclient.app.UI.Fragments.manual_Control.ManualControl;
 import client.pegasusclient.app.UI.Fragments.settings.ClientSettings;
 import client.pegasusclient.app.UI.Fragments.settings.Connections.Bluetooth.MainBluetoothFragment;
 
@@ -65,8 +66,8 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
                 return MainBluetoothFragment.newInstance();
 //            case Autonomous:
 //                break;
-//            case Manual_Control:
-//                break;
+            case Manual_Control:
+                return ManualControl.newInstance();
 //            case Logs:
 //                break;
 //            case Camera:
