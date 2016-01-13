@@ -1,14 +1,21 @@
 package client.pegasusclient.app.BL.Bluetooth;
 
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Messenger;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.json.JSONException;
@@ -19,9 +26,9 @@ import org.json.JSONObject;
  *         This class handle conneciton to remote device
  *         it keeps a inner class which extends a thread to handle the connection read and write
  */
-public class ConnectionManager {
+public class ConnectionManager extends Service {
 
-    public static ConnectionManager connectionService;
+    private IBinder mConnectionManagerService = new MyLocalBinder();
 
     private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
     // Debugging
@@ -29,12 +36,12 @@ public class ConnectionManager {
     private static final boolean debugging = true;
 
     // Member fields
-    private final BluetoothAdapter mAdapter;            //device bluetooth adapter
-    private Handler mHandler;
+    private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
     private ConnectionService mConnectionService;
     private int mState;
 
+    private HashMap<String,Handler> handlers;       //used to keep handler for several fragments across the app
     /**
      * Standard SerialPortService ID
      * the UUID on the client must match one that the other device (server mode) is listening for
@@ -46,34 +53,52 @@ public class ConnectionManager {
      */
 
     // Constants that indicate the current connection state
-    public static final int STATE_DISCONNECTED = -1;           //we are disconnected
+    public static final int STATE_DISCONNECTED = -1;            //we are disconnected
     public static final int STATE_NONE = 0;                     // we're doing nothing
     public static final int STATE_CONNECTING = 1;               // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;                // now setConnectionManager to a remote device
 
-    /**
-     * Constructor. Prepares a new Bluetooth Connection Service session.
-     */
-    private ConnectionManager() {
+
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
-        mConnectionService = new ConnectionService();
+        handlers =  new HashMap<String, Handler>();
+        return mConnectionManagerService;
     }
 
-    public static ConnectionManager getConnectionServiceInstance() {
-        if (connectionService == null) {
-            connectionService = new ConnectionManager();
+    @Override
+    public boolean onUnbind(Intent intent) {
+        return super.onUnbind(intent);
+    }
+
+
+    public class MyLocalBinder extends Binder {
+
+        public ConnectionManager gerService() {
+            return ConnectionManager.this;
         }
-        return connectionService;
+
     }
 
     /**
-     * @param handler A Handler to send messages back to the UI Activity
+     * Register fragment to service in order to get messages from the server
+     * @param tag fragment id
+     * @param handler Handler to send messages
      */
-    public void setHandler(Handler handler) {
-        mHandler = handler;
+    public void registerToMeesagesService(String tag,Handler handler){
+        handlers.put(tag,handler);
     }
 
+    /**
+     * remove handler from the map
+     * @param tag
+     */
+    public void removeHandler(String tag){
+        handlers.remove(tag);
+    }
 
     /**
      * Set the current state of the chat connection
@@ -153,16 +178,6 @@ public class ConnectionManager {
         // Send a failure message back to the Activity
         //  updateActivity(General.MessageType.ERROR, General.OnDeviceConnectionLost);
     }
-
-
-//    private void updateActivity(General.MessageType messageType, String msg) {
-//        Message message = new Message();
-//        message.
-//        Bundle bundle = new Bundle();
-//        bundle.putString(messageType.toString(), msg);
-//        message.setData(bundle);
-//        mHandler.sendMessage(message);
-//    }
 
     public BluetoothAdapter getAdapter() {
         return mAdapter;

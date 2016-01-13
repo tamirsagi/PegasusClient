@@ -1,4 +1,9 @@
-package client.pegasusclient.app.BL.Bluetooth;/**
+package client.pegasusclient.app.BL.Bluetooth;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+
+/**
  * @author  Tamir Sagi
  */
 public class General {
@@ -16,7 +21,31 @@ public class General {
     public static final String OnBluetoothNotSupported = "Bluetooth is not available";
 
 
+    public enum Receiver {
+        PEGASUS_SERVER(0), LOGS(1), Live_Streaming(2);
 
+        private int value;
+
+        public static HashMap<Integer,Receiver> receivers = new HashMap<Integer, Receiver>();
+
+        static{
+            for(Receiver r : EnumSet.allOf(Receiver.class))
+                receivers.put(r.getValue(),r);
+        }
+
+        Receiver(int value){
+            this.value = value;
+        }
+
+
+        public int getValue(){
+            return value;
+        }
+
+        public static Receiver get(int value){
+            return receivers.get(value);
+        }
+    }
 
 
 }
