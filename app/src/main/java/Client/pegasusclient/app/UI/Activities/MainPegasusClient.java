@@ -1,5 +1,8 @@
 package client.pegasusclient.app.UI.Activities;
 
+import android.content.*;
+import android.os.IBinder;
+import client.pegasusclient.app.BL.Services.ConnectionManager;
 import client.pegasusclient.app.UI.Fragments.MainApp.MainAppPagerAdapter;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -12,10 +15,15 @@ import android.support.v4.view.ViewPager;
  */
 public class MainPegasusClient extends FragmentActivity {
 
+
+    private ConnectionManager mConnectionManager;       //Bluetooth conneciton service
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_main_pegasus_client);
+
+        createBinnedConnectionManagerService(); //bind to Bluetooth connection manager service
 
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pagesViewer);
         final MainAppPagerAdapter adapter = new MainAppPagerAdapter(getSupportFragmentManager()
@@ -43,4 +51,51 @@ public class MainPegasusClient extends FragmentActivity {
         tabLayout.setupWithViewPager(viewPager);
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mConnectionManager != null)
+            getApplicationContext().unbindService(BluetoothServiceConnection);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mConnectionManager != null)
+         createBinnedConnectionManagerService();
+    }
+
+
+
+    /**
+     * Bind to Bluetooth Connection Manager Service
+     */
+    private void createBinnedConnectionManagerService() {
+        Intent connectionManagerServiceIntent = new Intent(this, ConnectionManager.class);
+        getApplicationContext().bindService(connectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(connectionManagerServiceIntent);
+    }
+
+    /**
+     * Create the service instance
+     */
+    private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ConnectionManager.MyLocalBinder gpsBinder = (ConnectionManager.MyLocalBinder) service;
+            mConnectionManager = gpsBinder.gerService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            if(BluetoothServiceConnection != null)
+                getApplicationContext().unbindService(BluetoothServiceConnection);
+        }
+    };
 }

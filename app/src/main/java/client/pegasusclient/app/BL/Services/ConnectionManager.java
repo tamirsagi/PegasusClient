@@ -1,4 +1,4 @@
-package client.pegasusclient.app.BL.Bluetooth;
+package client.pegasusclient.app.BL.Services;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -8,16 +8,17 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.UUID;
 
+import client.pegasusclient.app.BL.Bluetooth.General;
+import client.pegasusclient.app.BL.Bluetooth.IBluetoothSocketWrapper;
+import client.pegasusclient.app.BL.Bluetooth.Message;
+import client.pegasusclient.app.BL.Bluetooth.NativeBluetoothSocket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,7 +29,7 @@ import org.json.JSONObject;
  */
 public class ConnectionManager extends Service {
 
-    private IBinder mConnectionManagerService = new MyLocalBinder();
+    private IBinder mConnectionManagerService  = new MyLocalBinder();
 
     private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
     // Debugging
@@ -38,7 +39,7 @@ public class ConnectionManager extends Service {
     // Member fields
     private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
-    private ConnectionService mConnectionService;
+    private ConnectionService mConnectionService = new ConnectionService();
     private int mState;
 
     private HashMap<String,Handler> handlers;       //used to keep handler for several fragments across the app
@@ -57,7 +58,6 @@ public class ConnectionManager extends Service {
     public static final int STATE_NONE = 0;                     // we're doing nothing
     public static final int STATE_CONNECTING = 1;               // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;                // now setConnectionManager to a remote device
-
 
 
     @Nullable
@@ -99,6 +99,7 @@ public class ConnectionManager extends Service {
     public void removeHandler(String tag){
         handlers.remove(tag);
     }
+
 
     /**
      * Set the current state of the chat connection
