@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
-import client.pegasusclient.app.BL.Bluetooth.General;
-import client.pegasusclient.app.BL.Bluetooth.IBluetoothSocketWrapper;
-import client.pegasusclient.app.BL.Bluetooth.Message;
+import client.pegasusclient.app.BL.General;
+import client.pegasusclient.app.BL.Interfaces.IBluetoothSocketWrapper;
 import client.pegasusclient.app.BL.Bluetooth.NativeBluetoothSocket;
+import client.pegasusclient.app.BL.Interfaces.onMessageReceivedListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,11 +27,11 @@ import org.json.JSONObject;
  *         This class handle conneciton to remote device
  *         it keeps a inner class which extends a thread to handle the connection read and write
  */
-public class ConnectionManager extends Service {
+public class ConnectionManager extends Service implements onMessageReceivedListener {
 
     private IBinder mConnectionManagerService  = new MyLocalBinder();
 
-    private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
+
     // Debugging
     private static final String TAG = "ConnectionService";
     private static final boolean debugging = true;
@@ -39,9 +39,9 @@ public class ConnectionManager extends Service {
     // Member fields
     private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
-    private ConnectionService mConnectionService = new ConnectionService();
+    private ConnectionService mConnectionService = new ConnectionService(this);
+    private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
     private int mState;
-
     private HashMap<String,Handler> handlers;       //used to keep handler for several fragments across the app
     /**
      * Standard SerialPortService ID
@@ -73,6 +73,8 @@ public class ConnectionManager extends Service {
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);
     }
+
+
 
 
     public class MyLocalBinder extends Binder {
@@ -209,16 +211,42 @@ public class ConnectionManager extends Service {
      */
 
 
+
+    @Override
+    public void onMessageReceived(String receivedMessage) {
+        try {
+            JSONObject jsonFromString = new JSONObject(receivedMessage);
+
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+
+
+
     /**
      * This thread runs while attempting to make an outgoing connection
-     * with a device.the connection either
-     * succeeds or fails.
+     * with a device.the connection either succeeds or fails.
      */
     private class ConnectionService extends Thread {
 
         private BluetoothDevice mRemoteDevice;    //remote device which we connect to
         private IBluetoothSocketWrapper bluetoothSocket;
         private UUID mUUID;
+        private onMessageReceivedListener listener;
+
+        public ConnectionService(onMessageReceivedListener listener){
+            this.listener = listener;
+        }
 
         /**
          * Connect to Bluetooth Device
@@ -288,8 +316,7 @@ public class ConnectionManager extends Service {
                 byte[] msg = new byte[bytesAvailable];
                 bluetoothSocket.getInputStream().read(msg);
                 String receivedMessage = new String(msg);
-                JSONObject jsonFromString = new JSONObject(receivedMessage);
-                Message messageToHandle = new Message();
+                listener.onMessageReceived(receivedMessage);        //fire the message to the service
                 Log.i(TAG, "receivedMessage: " + receivedMessage);
             }
         }
@@ -299,10 +326,9 @@ public class ConnectionManager extends Service {
          * Write to the setConnectionManager OutStream.
          * @param msg The bytes to writeToSocket
          */
-        public void writeToSocket(String msg) {
+        public synchronized void writeToSocket(String msg) {
             try {
                 bluetoothSocket.getOutputStream().write(msg.getBytes());
-                // TODO -  Share the sent message back to the UI Activity
             } catch (Exception e) {
                 Log.e(TAG, General.OnWriteToSocketFailed, e);
             }

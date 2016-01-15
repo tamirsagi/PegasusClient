@@ -1,4 +1,4 @@
-package client.pegasusclient.app.BL.Bluetooth;
+package client.pegasusclient.app.BL;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -19,6 +19,11 @@ public class General {
     public static final String OnDeviceConnectionLost = "Device connection was lost";
     public static final String OnCloseClientConnectionFailed = "unable to close() socket during connection failure";
     public static final String OnBluetoothNotSupported = "Bluetooth is not available";
+
+
+    public enum MessageType{
+        INFO, ERROR, WARNING, ACTION
+    }
 
 
     public enum Receiver {

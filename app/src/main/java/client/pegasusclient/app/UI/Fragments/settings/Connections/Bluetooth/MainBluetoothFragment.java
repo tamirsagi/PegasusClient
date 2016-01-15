@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 import android.widget.*;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 import client.pegasusclient.app.BL.Services.ConnectionManager;
-import client.pegasusclient.app.BL.Bluetooth.General;
+import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
 
@@ -218,8 +218,8 @@ public class MainBluetoothFragment extends Fragment {
     private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ConnectionManager.MyLocalBinder gpsBinder = (ConnectionManager.MyLocalBinder) service;
-            mConnectionManager = gpsBinder.gerService();
+            ConnectionManager.MyLocalBinder connectionManager = (ConnectionManager.MyLocalBinder) service;
+            mConnectionManager = connectionManager.gerService();
             prepareBluetoothSettings();
         }
 

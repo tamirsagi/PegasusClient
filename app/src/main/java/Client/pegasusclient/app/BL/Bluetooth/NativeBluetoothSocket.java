@@ -1,9 +1,9 @@
 package client.pegasusclient.app.BL.Bluetooth;
 
 import android.bluetooth.BluetoothSocket;
+import client.pegasusclient.app.BL.Interfaces.IBluetoothSocketWrapper;
 
 import java.io.*;
-import java.net.Socket;
 
 /**
  * @author  Tamir Sagi

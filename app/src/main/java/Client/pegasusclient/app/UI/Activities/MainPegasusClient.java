@@ -17,6 +17,7 @@ public class MainPegasusClient extends FragmentActivity {
 
 
     private ConnectionManager mConnectionManager;       //Bluetooth conneciton service
+    private boolean mHasServerStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,11 @@ public class MainPegasusClient extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(mConnectionManager != null) {
+            mConnectionManager.stopSelf();      //kill connection service
+            mConnectionManager = null;
+            mHasServerStarted = false;
+        }
     }
 
     @Override
@@ -79,7 +85,10 @@ public class MainPegasusClient extends FragmentActivity {
     private void createBinnedConnectionManagerService() {
         Intent connectionManagerServiceIntent = new Intent(this, ConnectionManager.class);
         getApplicationContext().bindService(connectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
-        startService(connectionManagerServiceIntent);
+        if(!mHasServerStarted) {
+            startService(connectionManagerServiceIntent);
+            mHasServerStarted = true;
+        }
     }
 
     /**
@@ -88,8 +97,8 @@ public class MainPegasusClient extends FragmentActivity {
     private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ConnectionManager.MyLocalBinder gpsBinder = (ConnectionManager.MyLocalBinder) service;
-            mConnectionManager = gpsBinder.gerService();
+            ConnectionManager.MyLocalBinder connectionManager = (ConnectionManager.MyLocalBinder) service;
+            mConnectionManager = connectionManager.gerService();
         }
 
         @Override
