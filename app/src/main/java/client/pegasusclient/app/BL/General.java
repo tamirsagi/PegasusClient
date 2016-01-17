@@ -20,9 +20,16 @@ public class General {
     public static final String OnCloseClientConnectionFailed = "unable to close() socket during connection failure";
     public static final String OnBluetoothNotSupported = "Bluetooth is not available";
 
+    public static final String KEY_MESSAGE_TYPE = "type";
+    public static final String KEY_MESSAGE_SENDER = "sender";
+    public static final char END_MESSAGE = '#';
 
     public enum MessageType{
         INFO, ERROR, WARNING, ACTION
+    }
+
+    public enum ActionType{
+        DRIVE, SETTINGS, CHANGE_DIRECTION
     }
 
 

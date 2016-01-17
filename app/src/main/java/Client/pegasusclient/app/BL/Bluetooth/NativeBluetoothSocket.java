@@ -13,9 +13,16 @@ import java.io.*;
 public class NativeBluetoothSocket implements IBluetoothSocketWrapper {
 
     private BluetoothSocket socket;
+    private PrintWriter writer;
 
     public NativeBluetoothSocket(BluetoothSocket tmp) {
         this.socket = tmp;
+
+        try {
+            writer = new PrintWriter(socket.getOutputStream(),true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -24,8 +31,8 @@ public class NativeBluetoothSocket implements IBluetoothSocketWrapper {
     }
 
     @Override
-    public OutputStream getOutputStream()throws IOException{
-        return socket.getOutputStream();
+    public PrintWriter getOutputStream()throws IOException{
+        return writer;
     }
 
     @Override

@@ -8,7 +8,7 @@ public interface IBluetoothSocketWrapper {
 
     InputStream getInputStream()throws IOException ;
 
-    OutputStream getOutputStream() throws IOException;
+    PrintWriter getOutputStream() throws IOException;
 
     String getRemoteDeviceName();
 

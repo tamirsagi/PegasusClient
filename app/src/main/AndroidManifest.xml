@@ -39,7 +39,12 @@
                 android:label="pegasus">
         </activity>
 
-        <service android:name="client.pegasusclient.app.BL.Services.ConnectionManager"
+        <service android:name="client.pegasusclient.app.BL.Services.ConnectionService"
+                 android:enabled="true"
+                 android:exported="true">
+        </service>
+
+        <service android:name="client.pegasusclient.app.BL.Services.SteeringService"
                  android:enabled="true"
                  android:exported="true">
         </service>

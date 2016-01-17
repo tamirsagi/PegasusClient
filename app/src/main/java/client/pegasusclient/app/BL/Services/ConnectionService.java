@@ -27,7 +27,7 @@ import org.json.JSONObject;
  *         This class handle conneciton to remote device
  *         it keeps a inner class which extends a thread to handle the connection read and write
  */
-public class ConnectionManager extends Service implements onMessageReceivedListener {
+public class ConnectionService extends Service implements onMessageReceivedListener {
 
     private IBinder mConnectionManagerService  = new MyLocalBinder();
 
@@ -39,7 +39,7 @@ public class ConnectionManager extends Service implements onMessageReceivedListe
     // Member fields
     private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
-    private ConnectionService mConnectionService = new ConnectionService(this);
+    private ConnectionManager mConnectionService = new ConnectionManager(this);
     private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
     private int mState;
     private HashMap<String,Handler> handlers;       //used to keep handler for several fragments across the app
@@ -79,8 +79,8 @@ public class ConnectionManager extends Service implements onMessageReceivedListe
 
     public class MyLocalBinder extends Binder {
 
-        public ConnectionManager gerService() {
-            return ConnectionManager.this;
+        public ConnectionService gerService() {
+            return ConnectionService.this;
         }
 
     }
@@ -237,14 +237,14 @@ public class ConnectionManager extends Service implements onMessageReceivedListe
      * This thread runs while attempting to make an outgoing connection
      * with a device.the connection either succeeds or fails.
      */
-    private class ConnectionService extends Thread {
+    private class ConnectionManager extends Thread {
 
         private BluetoothDevice mRemoteDevice;    //remote device which we connect to
         private IBluetoothSocketWrapper bluetoothSocket;
         private UUID mUUID;
         private onMessageReceivedListener listener;
 
-        public ConnectionService(onMessageReceivedListener listener){
+        public ConnectionManager(onMessageReceivedListener listener){
             this.listener = listener;
         }
 
@@ -328,7 +328,7 @@ public class ConnectionManager extends Service implements onMessageReceivedListe
          */
         public synchronized void writeToSocket(String msg) {
             try {
-                bluetoothSocket.getOutputStream().write(msg.getBytes());
+                bluetoothSocket.getOutputStream().println(msg);
             } catch (Exception e) {
                 Log.e(TAG, General.OnWriteToSocketFailed, e);
             }

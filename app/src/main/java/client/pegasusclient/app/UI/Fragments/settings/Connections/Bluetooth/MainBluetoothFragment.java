@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
-import client.pegasusclient.app.BL.Services.ConnectionManager;
+import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
@@ -56,7 +56,8 @@ public class MainBluetoothFragment extends Fragment {
 
     private SharedPreferences mSharedPreferences;
 
-    private ConnectionManager mConnectionManager;
+    private ConnectionService mConnectionService;
+    private boolean boundToConnectionService;
 
 
     public static MainBluetoothFragment newInstance() {
@@ -87,7 +88,7 @@ public class MainBluetoothFragment extends Fragment {
     private void prepareBluetoothSettings(){
         mBluetoothStatus = (TextView) root.findViewById(R.id.setting_bluetooth_status_context);
         // If the adapter is null, then Bluetooth is not supported
-        if (mConnectionManager.getAdapter() == null) {
+        if (mConnectionService.getAdapter() == null) {
             showAlertDialog(getResources().getString(R.string.settings_value_not_supported));
             mBluetoothStatus.setText(getResources().getString(R.string.settings_value_not_supported));
             changeLayoutChildrenState(false);
@@ -102,7 +103,7 @@ public class MainBluetoothFragment extends Fragment {
             mRemoteDeviceAddress = (TextView) root.findViewById(R.id.setting_bluetooth_remote_device_address_context);
 
             // If BT is not on, request that it be enabled.
-            isBluetoothEnabled = mConnectionManager.getAdapter().isEnabled();
+            isBluetoothEnabled = mConnectionService.getAdapter().isEnabled();
             setDeviceState(isBluetoothEnabled);
 
             //If bluetooth is enabled and we are connected to the same one
@@ -116,10 +117,10 @@ public class MainBluetoothFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     requestDiscoverable = true;
-                    isBluetoothEnabled = mConnectionManager.getAdapter().isEnabled();
+                    isBluetoothEnabled = mConnectionService.getAdapter().isEnabled();
                     if (isBluetoothEnabled) {
                         //in case the phone is not discoverable
-                        if (mConnectionManager.getAdapter().getScanMode() !=
+                        if (mConnectionService.getAdapter().getScanMode() !=
                                 BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
                             ensureDiscoverable();
                         } else {
@@ -155,8 +156,8 @@ public class MainBluetoothFragment extends Fragment {
      */
     private boolean stillConnectedToLastKnownDevice() {
         boolean answer = false;
-        if (mConnectionManager.isConnectedToRemoteDevice()) {
-            BluetoothDevice remote = mConnectionManager.getRemoteBluetoothDevice();
+        if (mConnectionService.isConnectedToRemoteDevice()) {
+            BluetoothDevice remote = mConnectionService.getRemoteBluetoothDevice();
             answer = remote.getAddress().equals(getStringFromSharedPreferences(KEY_REMOTE_ADDRESS));
         }
         return answer;
@@ -174,11 +175,12 @@ public class MainBluetoothFragment extends Fragment {
     public void onResume() {
         super.onResume();
         // If BT is not on, request that it be enabled.
-        if(mConnectionManager != null) {
-            createBinnedConnectionManagerService();             //when resume bind to Connection Manager Service again
-            isBluetoothEnabled = mConnectionManager.getAdapter().isEnabled();
+        if(!boundToConnectionService) {
+            createBinnedConnectionManagerService();             //when resume,  bind to Connection Manager Service again
+            isBluetoothEnabled = mConnectionService.getAdapter().isEnabled();
             setDeviceState(isBluetoothEnabled);
         }
+
     }
 
     @Override
@@ -188,8 +190,10 @@ public class MainBluetoothFragment extends Fragment {
             getActivity().unregisterReceiver(bluetoothState);   //unregister from the broadcast receiver
             isRegisteredToBroadcastReceiver = false;
         }
-        if(mConnectionManager != null)
-             getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
+        if(boundToConnectionService) {
+            getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
+            boundToConnectionService = false;
+        }
     }
 
     @Override
@@ -208,8 +212,9 @@ public class MainBluetoothFragment extends Fragment {
      * Bind to Bluetooth Connection Manager Service
      */
     private void createBinnedConnectionManagerService() {
-        Intent intent = new Intent(getActivity(), ConnectionManager.class);
+        Intent intent = new Intent(getActivity(), ConnectionService.class);
         getActivity().getApplicationContext().bindService(intent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+        boundToConnectionService = true;
     }
 
     /**
@@ -218,15 +223,18 @@ public class MainBluetoothFragment extends Fragment {
     private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ConnectionManager.MyLocalBinder connectionManager = (ConnectionManager.MyLocalBinder) service;
-            mConnectionManager = connectionManager.gerService();
+            ConnectionService.MyLocalBinder connectionManager = (ConnectionService.MyLocalBinder) service;
+            mConnectionService = connectionManager.gerService();
             prepareBluetoothSettings();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            if(BluetoothServiceConnection != null)
+
+            if(boundToConnectionService) {
                 getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
+                boundToConnectionService = false;
+            }
         }
     };
 
@@ -248,7 +256,7 @@ public class MainBluetoothFragment extends Fragment {
     BroadcastReceiver bluetoothState = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String currentState = mConnectionManager.getAdapter().EXTRA_STATE;
+            String currentState = mConnectionService.getAdapter().EXTRA_STATE;
             int state = intent.getIntExtra(currentState, NONE);
             switch (state) {
                 case BluetoothAdapter.STATE_TURNING_ON: {
@@ -326,10 +334,10 @@ public class MainBluetoothFragment extends Fragment {
                 // When DeviceListActivity returns with a device to connect
                 String btDeviceAddress = data.getExtras().getString(DevicesListDialog.EXTRA_DEVICE_ADDRESS);
                 // Get the BluetoothDevice object
-                BluetoothDevice remoteDevice = mConnectionManager.
+                BluetoothDevice remoteDevice = mConnectionService.
                         getAdapter().getRemoteDevice(btDeviceAddress);
                 // Attempt to connect to the device
-                boolean succeed = mConnectionManager.connectToRemoteDevice(remoteDevice);
+                boolean succeed = mConnectionService.connectToRemoteDevice(remoteDevice);
                 if (succeed) {
                     BluetoothDeviceInfo device = new BluetoothDeviceInfo(remoteDevice, 0);
                     mRemoteDeviceName.setText(device.getName());
@@ -380,8 +388,8 @@ public class MainBluetoothFragment extends Fragment {
      * @param isEnabled
      */
     private void setDeviceState(boolean isEnabled) {
-        mLocalDeviceName.setText(mConnectionManager.getAdapter().getName());
-        mLocalDeviceAddress.setText(mConnectionManager.getAdapter().getAddress());
+        mLocalDeviceName.setText(mConnectionService.getAdapter().getName());
+        mLocalDeviceAddress.setText(mConnectionService.getAdapter().getAddress());
 
         if (isEnabled) {
             mBluetoothStatus.setText(getResources().getString(R.string.settings_value_enable));
