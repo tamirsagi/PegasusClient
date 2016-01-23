@@ -29,7 +29,7 @@ public class General {
     }
 
     public enum ActionType{
-        DRIVE, SETTINGS, CHANGE_DIRECTION
+        CHANGE_SPEED,STEERING, SETTINGS, CHANGE_DIRECTION
     }
 
 

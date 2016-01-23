@@ -20,7 +20,9 @@ import org.json.JSONObject;
 
 /**
  * @author Tamir Sagi
- *         This class controls the Pegasus Vehicle using Gyro and linear acceleration
+ *         This class controls the Pegasus Vehicle manually using Gyro and linear acceleration
+ *         digital speed on Arduino(0-255)
+ *         0-40 degrees Steering Angle each side
  */
 public class ManualControl extends Fragment {
 
@@ -36,7 +38,8 @@ public class ManualControl extends Fragment {
     private static final double MAX_DIGITAL_SPEED_RANGE_B = 255;
 
     private static final int MAX_DIGITAL_SPEED_VALUE = 255;
-    private static final int MAX_STEERING_ANGLE = 45;
+    private static final int MAX_STEERING_ANGLE = 130;                      //Max Steering angle
+    private static final int MIN_STEERING_ANGLE = 50;                       //Min Steering Angle
     private static final int STRAIGHT_STEERING_ANGLE = 90;
     private static final char STEERING_RIGHT = 'R';
     private static final char STEERING_LEFT = 'L';
@@ -44,7 +47,7 @@ public class ManualControl extends Fragment {
 
     private static final String KEY_DIGITAL_SPEED = "DS";                  //DS = Digital Speed
     private static final String KEY_ROTATION_ANGLE = "RA";                //RA = Rotation Angle
-    private static final String KEY_STEERING_DIRECTION = "direction";    //Steer Direction either Right or Left
+    private static final String KEY_STEERING_DIRECTION = "SD";          //Steer Direction either Right or Left
 
     private View root;
 
@@ -201,27 +204,11 @@ public class ManualControl extends Fragment {
                     int rotation = msg.getData().getInt(SteeringService.KEY_ROTATION);
                     angles.setText("inclination : " + inclination + "\nrotation:" + rotation);
                     int digitalSpeed = getDigitalSpeed(inclination, rotation);
+                    sendDigitalSpeedToServer(digitalSpeed);
                     char steerDirection = getSteeringDirection(rotation);
-                    JSONObject messageToServer = new JSONObject();
-                    try {
-                        messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-                        messageToServer.put(General.MessageType.ACTION.toString(), General.ActionType.DRIVE.toString());
-                        messageToServer.put(KEY_DIGITAL_SPEED, digitalSpeed);
-                        if(steerDirection == STEERING_RIGHT){
-                            messageToServer.put(KEY_STEERING_DIRECTION,steerDirection);
-                            messageToServer.put(KEY_ROTATION_ANGLE, STRAIGHT_STEERING_ANGLE - rotation);
-                        }
-                        else if(steerDirection == STEERING_LEFT ){
-                            messageToServer.put(KEY_STEERING_DIRECTION,steerDirection);
-                            messageToServer.put(KEY_ROTATION_ANGLE, rotation - STRAIGHT_STEERING_ANGLE);
-                        }
-                        if(mConnectionService.isConnectedToRemoteDevice())
-                            mConnectionService.sendMessageToRemoteDevice(messageToServer.toString() + General.END_MESSAGE);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    if(steerDirection != STEERING_NONE)                       //if it's R or L
+                       sendSteeringAngleToServer(steerDirection,rotation);
                     return true;
-
                 default:
                     return false;
             }
@@ -260,11 +247,58 @@ public class ManualControl extends Fragment {
      * @return - Direction
      */
     private char getSteeringDirection(int rotation){
-        if(MAX_STEERING_ANGLE <= rotation && rotation <= STRAIGHT_STEERING_ANGLE)
-            return STEERING_RIGHT;       //right when angle is 45-90 degrees
-        else if (STRAIGHT_STEERING_ANGLE < rotation && rotation <= (MAX_STEERING_ANGLE + STRAIGHT_STEERING_ANGLE))
-            return STEERING_LEFT;       //Left when angle is 90-135 degrees
+        if(0 <= rotation && rotation <= STRAIGHT_STEERING_ANGLE)
+            return STEERING_RIGHT;       //right when angle is 0-90 degrees
+        else if (STRAIGHT_STEERING_ANGLE < rotation && rotation <= 2 * MAX_STEERING_ANGLE)
+            return STEERING_LEFT;       //Left when angle is 90-180 degrees
         return STEERING_NONE;
     }
+
+    /**
+     * Method sends digital speed to server
+     * @param digitalSpeed
+     */
+    private void sendDigitalSpeedToServer(int digitalSpeed){
+        JSONObject messageToServer = new JSONObject();
+        try {
+            messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
+            messageToServer.put(General.MessageType.ACTION.toString(), General.ActionType.CHANGE_SPEED.toString());
+            messageToServer.put(KEY_DIGITAL_SPEED, digitalSpeed);
+            if(mConnectionService.isConnectedToRemoteDevice())
+                mConnectionService.sendMessageToRemoteDevice(messageToServer.toString() + General.END_MESSAGE);
+        }catch (JSONException e){
+
+        }
+    }
+
+    /**
+     * method sends steering angle to server
+     * @param steerDirection - R = Right or L = Left
+     * @param rotation       - Angle 0 - 40 degrees
+     */
+    private void sendSteeringAngleToServer(char steerDirection, double rotation){
+        JSONObject messageToServer = new JSONObject();
+        try {
+            messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
+            messageToServer.put(General.MessageType.ACTION.toString(), General.ActionType.STEERING.toString());
+            if(rotation < MIN_STEERING_ANGLE)
+                rotation = MIN_STEERING_ANGLE;
+            else if(rotation > MAX_STEERING_ANGLE)
+                rotation = MAX_STEERING_ANGLE;
+            messageToServer.put(KEY_STEERING_DIRECTION, steerDirection);
+            // convert the rotation angle to 0-40
+            if(steerDirection == STEERING_RIGHT)
+                rotation = STRAIGHT_STEERING_ANGLE - rotation;
+            else
+                rotation -= STRAIGHT_STEERING_ANGLE;
+            messageToServer.put(KEY_ROTATION_ANGLE, rotation);
+            if(mConnectionService.isConnectedToRemoteDevice())
+                mConnectionService.sendMessageToRemoteDevice(messageToServer.toString() + General.END_MESSAGE);
+        }catch (JSONException e){
+
+        }
+    }
+
+
 }
 

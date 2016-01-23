@@ -14,9 +14,8 @@ import java.util.HashMap;
 
 /**
  * @author Tamir Sagi
- *         The service is responsible to update Manual control fragment with relevant phone positionin
- *         It keeps the last values and compare it with the current updated value, if the different is more than
- *         3 degrees it sends it over the fragment.
+ *         The service is responsible to update Manual control fragment with relevant phone positioning
+ *         both rotation and inclination
  */
 public class SteeringService extends Service implements SensorEventListener {
 
@@ -26,8 +25,6 @@ public class SteeringService extends Service implements SensorEventListener {
     public static final String KEY_INCLINATION = "Inclination";
     public static final String KEY_ROTATION = "Rotation";
 
-    private static final int MIN_ANGLE_TO_SEND = 3;
-
     private Sensor accelerometer;
     private SensorManager sensorManager;                 // sensor manager, we get the specific service
 
@@ -35,12 +32,7 @@ public class SteeringService extends Service implements SensorEventListener {
         We use an Object for that   */
     private final IBinder mSteeringService = new MyLocalBinder();
 
-
     private HashMap<String, Handler> handlers = new HashMap<String, Handler>();
-
-    private int mLastInclinationValue;
-    private int mLastRotationValue;
-    private boolean mShouldSendData;
 
 
     @Override
@@ -71,16 +63,11 @@ public class SteeringService extends Service implements SensorEventListener {
         int inclination = (int) Math.round(Math.toDegrees(Math.acos(g[2])));
         int rotation = (int) Math.round(Math.toDegrees(Math.atan2(g[0], g[1])));
 
-        if (Math.abs(rotation - mLastRotationValue) >= MIN_ANGLE_TO_SEND) {
-            mLastRotationValue = rotation;
-            mShouldSendData = true;
-        }
-
         for (String key : handlers.keySet()) {
             Message msg = new Message();
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_INCLINATION, inclination);
-            bundle.putInt(KEY_ROTATION, mLastRotationValue);
+            bundle.putInt(KEY_ROTATION, rotation);
             msg.what = Sender_SteeringService;
             msg.setData(bundle);
             handlers.get(key).sendMessage(msg);
