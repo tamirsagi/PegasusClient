@@ -17,6 +17,7 @@ import android.widget.*;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.General;
+import client.pegasusclient.app.BL.Util.PreferencesManager;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
 
@@ -54,8 +55,6 @@ public class MainBluetoothFragment extends Fragment {
     private boolean requestDiscoverable;
     private boolean isRegisteredToBroadcastReceiver;
 
-    private SharedPreferences mSharedPreferences;
-
     private ConnectionService mConnectionService;
     private boolean boundToConnectionService;
 
@@ -79,7 +78,6 @@ public class MainBluetoothFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_network_connection, container, false);
-        mSharedPreferences = getActivity().getSharedPreferences(MainApp.KEY_SHARED_PREFERNCES_NAME,Context.MODE_PRIVATE);
         mLoading = (ProgressBar) root.findViewById(R.id.progressBar);
         mLoading.setVisibility(View.VISIBLE);
         return root;
@@ -108,8 +106,8 @@ public class MainBluetoothFragment extends Fragment {
 
             //If bluetooth is enabled and we are connected to the same one
             if (isBluetoothEnabled && stillConnectedToLastKnownDevice()) {
-                mRemoteDeviceName.setText(getStringFromSharedPreferences(KEY_REMOTE_NAME));
-                mRemoteDeviceAddress.setText(getStringFromSharedPreferences(KEY_REMOTE_ADDRESS));
+                mRemoteDeviceName.setText(PreferencesManager.getInstance().getString(KEY_REMOTE_NAME));
+                mRemoteDeviceAddress.setText(PreferencesManager.getInstance().getString(KEY_REMOTE_ADDRESS));
             }
 
 
@@ -158,7 +156,7 @@ public class MainBluetoothFragment extends Fragment {
         boolean answer = false;
         if (mConnectionService.isConnectedToRemoteDevice()) {
             BluetoothDevice remote = mConnectionService.getRemoteBluetoothDevice();
-            answer = remote.getAddress().equals(getStringFromSharedPreferences(KEY_REMOTE_ADDRESS));
+            answer = remote.getAddress().equals(PreferencesManager.getInstance().getString(KEY_REMOTE_ADDRESS,"unknown"));
         }
         return answer;
     }
@@ -342,29 +340,13 @@ public class MainBluetoothFragment extends Fragment {
                     BluetoothDeviceInfo device = new BluetoothDeviceInfo(remoteDevice, 0);
                     mRemoteDeviceName.setText(device.getName());
                     mRemoteDeviceAddress.setText(device.getAddress());
-                    saveToPreferences(KEY_REMOTE_NAME,device.getName());
-                    saveToPreferences(KEY_REMOTE_ADDRESS,device.getAddress());
+                    PreferencesManager.getInstance().put(KEY_REMOTE_NAME,device.getName());
+                    PreferencesManager.getInstance().put(KEY_REMOTE_ADDRESS,device.getAddress());
                 }
                 else
                     showAlertDialog(remoteDevice.getName());
                 break;
         }
-    }
-
-    /**
-     * Save last device both name and address
-     */
-    private void saveToPreferences(String key, String value) {
-        mSharedPreferences.edit().putString(key, value);
-        mSharedPreferences.edit().apply();
-    }
-
-
-    private String getStringFromSharedPreferences(String key) {
-        if(mSharedPreferences.contains(key))
-            return mSharedPreferences.getString(key,getResources().getString(R.string.settings_value_unknown));
-
-        return getResources().getString(R.string.settings_value_unknown);
     }
 
     /**

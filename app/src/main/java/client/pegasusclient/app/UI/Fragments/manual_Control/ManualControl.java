@@ -2,6 +2,7 @@ package client.pegasusclient.app.UI.Fragments.manual_Control;
 
 import android.content.*;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,7 +35,7 @@ public class ManualControl extends Fragment {
 
 
     public enum DrivingDirection{
-        FORWARD(0), BACKWARD(1);
+        FORWARD(0), REVERSE(1);
 
         private int value;
         DrivingDirection(int value){
@@ -83,8 +84,10 @@ public class ManualControl extends Fragment {
     private static final double MIN_DIGITAL_SPEED_RED_COLOR_RANGE = 220;
     private static final double MAX_DIGITAL_SPEED_RED_COLOR_RANGE = 255;
 
+    private final String degreeSymbol  = "\u00b0";
 
-    private View root;
+
+    private View mRoot;
     private RadioGroup mDrivingDirectionRadioGroup;
 
     ////////////////// SERVICES \\\\\\\\\\\\\\\\\\\\\\\\
@@ -97,7 +100,10 @@ public class ManualControl extends Fragment {
     private boolean mIsSteeringServiceBinned;
 
 
-    private TextView angles;
+    private TextView mSpeed;
+    private TextView mRotation;
+    private TextView mDrivingDirection;
+    private TextView mTotalDistance;
 
     private int mLastDigitalSpeed = 0;
     private int mLastSteeringAngle = 0;
@@ -105,7 +111,6 @@ public class ManualControl extends Fragment {
     private boolean mDirectionSet;
 
     private SpeedometerGauge mSpeedometerGauge;
-
 
     public static ManualControl newInstance() {
         ManualControl mc = new ManualControl();
@@ -122,11 +127,25 @@ public class ManualControl extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        root = inflater.inflate(R.layout.fragment_manual_control, container, false);
-        angles = (TextView) root.findViewById(R.id.mc_text);
+        mRoot = inflater.inflate(R.layout.fragment_manual_control, container, false);
+        Typeface mLedFont = Typeface.createFromAsset(getActivity().getAssets(),
+                "fonts/digital-7/digital-7_mono.ttf");
+
+        mSpeed = (TextView) mRoot.findViewById(R.id.manual_control_speed);
+        mSpeed.setTypeface(mLedFont);
+
+        mRotation = (TextView) mRoot.findViewById(R.id.manual_control_rotation);
+        mRotation.setTypeface(mLedFont);
+
+        mTotalDistance = (TextView) mRoot.findViewById(R.id.manual_control_distance);
+        mTotalDistance.setTypeface(mLedFont);
+
+        mDrivingDirection = (TextView) mRoot.findViewById(R.id.manual_control_driving_direction) ;
+        mDrivingDirection.setTypeface(mLedFont);
+
         setRadioGroup();
         SetSpeedometer();
-        return root;
+        return mRoot;
     }
 
 
@@ -180,7 +199,7 @@ public class ManualControl extends Fragment {
      * set Radio Button Group
      */
     private void setRadioGroup(){
-        mDrivingDirectionRadioGroup = (RadioGroup)root.findViewById(R.id.manual_control_driving_direction_radio_group);
+        mDrivingDirectionRadioGroup = (RadioGroup) mRoot.findViewById(R.id.manual_control_driving_direction_radio_group);
         mDrivingDirectionRadioGroup.clearCheck();
         mDrivingDirectionRadioGroup.check(R.id.manual_control_direction_forward);       //check Forward as Default
         mDirectionSet = true;
@@ -193,13 +212,12 @@ public class ManualControl extends Fragment {
                 switch(checkedId){
                     case R.id.manual_control_direction_forward:
                         mLastDrivingDirection = DrivingDirection.FORWARD;
-                        Toast.makeText(getContext(),"Forward",Toast.LENGTH_LONG).show();
-
+                        mDrivingDirection.setText("D");
                         break;
 
-                    case R.id.manual_control_direction_backward:
-                        mLastDrivingDirection = DrivingDirection.BACKWARD;
-                        Toast.makeText(getContext(),"Backword",Toast.LENGTH_LONG).show();
+                    case R.id.manual_control_direction_reverse:
+                        mLastDrivingDirection = DrivingDirection.REVERSE;
+                        mDrivingDirection.setText("R");
                         break;
                 }
 
@@ -213,20 +231,19 @@ public class ManualControl extends Fragment {
      * Settings for speedometer gauge
      */
     private void SetSpeedometer(){
-        mSpeedometerGauge = (SpeedometerGauge)root.findViewById(R.id.speedometer);
+        mSpeedometerGauge = (SpeedometerGauge) mRoot.findViewById(R.id.speedometer);
         mSpeedometerGauge.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
             public String getLabelFor(double progress, double maxProgress) {
                 return String.valueOf((int) Math.round(progress));
-            }
-        });
+    }
+});
         // configure value range and ticks
         mSpeedometerGauge.setMaxSpeed(MAX_DIGITAL_SPEED_VALUE);
         mSpeedometerGauge.setMajorTickStep(30);
         mSpeedometerGauge.setMinorTicks(2);
         mSpeedometerGauge.setSpeed(0);
     }
-
 
 
 
@@ -320,9 +337,10 @@ public class ManualControl extends Fragment {
      */
     private void handleSteeringChanges(int rotation, int inclination){
         int digitalSpeed = getDigitalSpeed(inclination, rotation);
-        angles.setText("DS: " + digitalSpeed + "\nrotation:" + rotation);
         mSpeedometerGauge.clearColoredRanges();
         mSpeedometerGauge.setSpeed(mLastDigitalSpeed);
+        mSpeed.setText("" + digitalSpeed);
+        mRotation.setText("" + rotation + degreeSymbol);
         if(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_GREEN_COLOR_RANGE)
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE, mLastDigitalSpeed, Color.GREEN);
         else if(MIN_DIGITAL_SPEED_YELLOW_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_YELLOW_COLOR_RANGE){
@@ -380,7 +398,7 @@ public class ManualControl extends Fragment {
 
     /**
      * method sends driving direction when its changed
-     * @param drivingDirection  - drivign direction (FORWARD , BACKWARD);
+     * @param drivingDirection  - drivign direction (FORWARD , REVERSE);
      */
     private void sendDrivingDirection(DrivingDirection drivingDirection){
 

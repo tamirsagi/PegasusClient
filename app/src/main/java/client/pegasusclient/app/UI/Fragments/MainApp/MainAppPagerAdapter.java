@@ -21,7 +21,7 @@ import java.util.Map;
 public class MainAppPagerAdapter extends FragmentPagerAdapter {
 
     private Context context;
-    private static final String tabTitles[] = new String[]{"Settings", "Autonomous", "Manual Control", "Logs", "Camera", "Map"};
+    private static final String tabTitles[] = new String[]{"Settings", "Autonomous", "Manual Control"};
 
     public MainAppPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
@@ -31,8 +31,7 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
 
     public enum PAGES {
 
-        Settings(0), Autonomous(1), Manual_Control(2), Logs(3),
-        Camera(4), Map(5);
+        Settings(0), Autonomous(1), Manual_Control(2);
 
         private static final Map<Integer, PAGES> lookup
                 = new HashMap<Integer, PAGES>();
@@ -68,8 +67,6 @@ public class MainAppPagerAdapter extends FragmentPagerAdapter {
 //                break;
             case Manual_Control:
                 return ManualControl.newInstance();
-//            case Logs:
-//                break;
 //            case Camera:
 //                break;
 //            case Map:

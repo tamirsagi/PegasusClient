@@ -128,16 +128,16 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      * @param remoteDevice The BluetoothDevice to connectToRemoteDevice
      */
     public boolean connectToRemoteDevice(BluetoothDevice remoteDevice) {
-        if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
-        if (mConnectionService.isConnected())
-            disconnectFromRemoteDevice();           //if socket is exist disconnect from it
+      if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
         try {
+            if (isConnectedToRemoteDevice() ||  socketStillAlive())
+                disconnectFromRemoteDevice();           //if socket is exist disconnect from it
             setState(STATE_CONNECTING);
             mConnectionService.connectToRemoteDevice(remoteDevice, mSharedUUID);
             mConnectionService.start();             //start the thread to handle socket
             return true;
         } catch (Exception e) {
-            Log.e(TAG,e.getMessage());
+            Log.e(TAG, e.getMessage());
             return false;
         }
     }
@@ -149,7 +149,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
         if (debugging)
             Log.d(TAG, "disconnect FromRemote Device");
         setState(STATE_DISCONNECTED);
-        if (mConnectionService != null) {
+        if (mConnectionService != null && mConnectionService.socketStillAlive()) {
             mConnectionService.closeSocket();
             mConnectionService = null;
         }
@@ -198,6 +198,12 @@ public class ConnectionService extends Service implements onMessageReceivedListe
         return false;
     }
 
+    public boolean socketStillAlive(){
+        if (mConnectionService != null)
+            return mConnectionService.socketStillAlive();
+        return false;
+    }
+
     /**
      * @return remote bluetooth device
      */
@@ -206,10 +212,10 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     }
 
 
+
     /**
      *     Handle connection is a separate Thread
      */
-
 
 
     @Override
@@ -224,13 +230,6 @@ public class ConnectionService extends Service implements onMessageReceivedListe
             e.printStackTrace();
         }
     }
-
-
-
-
-
-
-
 
 
     /**
@@ -356,6 +355,16 @@ public class ConnectionService extends Service implements onMessageReceivedListe
         }
 
         /**
+         * Method checks whether the socket is still alive, means not null
+         * @return
+         */
+        public boolean socketStillAlive(){
+            if(bluetoothSocket != null)
+                return bluetoothSocket.getSocket() != null;
+            return false;
+        }
+
+        /**
          * @return the remote device we are connected to
          */
         public BluetoothDevice getRemoteBluetoothDevice() {
@@ -365,7 +374,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
         /**
          //         * when I receive that exception, I instantiate a fallback BluetoothSocket,
-         //         * As you can be seen, invoking the hidden method createRfcommSocket via reflections.
+         //         * As can be seen, invoking the hidden method createRfcommSocket via reflections.
          //         *
          //         * @param current - current Socket
          //         */

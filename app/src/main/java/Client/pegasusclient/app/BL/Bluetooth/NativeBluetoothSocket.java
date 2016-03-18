@@ -8,18 +8,18 @@ import java.io.*;
 /**
  * @author  Tamir Sagi
  *
- * this class represent bluetooth socket including the various functionalities
+ * this class represent bluetooth mSocket including the various functionalities
  */
 public class NativeBluetoothSocket implements IBluetoothSocketWrapper {
 
-    private BluetoothSocket socket;
-    private PrintWriter writer;
+    private BluetoothSocket mSocket;
+    private PrintWriter mWriter;
 
     public NativeBluetoothSocket(BluetoothSocket tmp) {
-        this.socket = tmp;
+        this.mSocket = tmp;
 
         try {
-            writer = new PrintWriter(socket.getOutputStream(),true);
+            mWriter = new PrintWriter(mSocket.getOutputStream(),true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -27,44 +27,44 @@ public class NativeBluetoothSocket implements IBluetoothSocketWrapper {
 
     @Override
     public InputStream getInputStream()throws IOException{
-        return socket.getInputStream();
+        return mSocket.getInputStream();
     }
 
     @Override
     public PrintWriter getOutputStream()throws IOException{
-        return writer;
+        return mWriter;
     }
 
     @Override
     public String getRemoteDeviceName() {
-        return socket.getRemoteDevice().getName();
+        return mSocket.getRemoteDevice().getName();
     }
 
     @Override
     public void connect() throws IOException {
-        socket.connect();
+        mSocket.connect();
     }
 
     @Override
     public String getRemoteDeviceAddress() {
-        return socket.getRemoteDevice().getAddress();
+        return mSocket.getRemoteDevice().getAddress();
     }
 
     @Override
     public void close() throws IOException {
-        socket.close();
+        mSocket.close();
     }
 
     @Override
     public boolean isConnected(){
-        if(socket != null)
-            return socket.isConnected();
+        if(mSocket != null)
+            return mSocket.isConnected();
         return false;
     }
 
     @Override
     public BluetoothSocket getSocket() {
-        return socket;
+        return mSocket;
     }
 
 }

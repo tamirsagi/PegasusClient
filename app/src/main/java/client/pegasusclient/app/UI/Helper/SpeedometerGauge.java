@@ -42,7 +42,7 @@ public class SpeedometerGauge extends View {
     private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
     private int minorTicks = DEFAULT_MINOR_TICKS;
     private LabelConverter labelConverter;
-    private String unitsText = "km/h";
+    private String unitsText = "";//"km/h";
 
     private List<ColoredRange> ranges = new ArrayList<ColoredRange>();
 

@@ -47,7 +47,7 @@
     <!--Manual Control -->
     <string name="manual_control_direction_title">Driving Direction:</string>
     <string name="manual_control_direction_forward">Forward</string>
-    <string name="manual_control_direction_backward">Backward</string>
+    <string name="manual_control_direction_reverse">Reverse</string>
 
 </resources>
 
