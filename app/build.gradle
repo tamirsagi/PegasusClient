@@ -47,5 +47,5 @@ dependencies {
     //Loading bar
     compile 'com.victor:lib:1.0.2'
 
-
+    compile 'com.github.pedrovgs:draggablepanel:1.9'
 }

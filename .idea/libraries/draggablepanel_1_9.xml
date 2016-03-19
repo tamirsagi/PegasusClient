@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="draggablepanel-1.9">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/com.github.pedrovgs/draggablepanel/1.9/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/com.github.pedrovgs/draggablepanel/1.9/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
