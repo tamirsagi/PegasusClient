@@ -1,8 +1,11 @@
 package client.pegasusclient.app.UI.Activities;
 
+import android.app.Service;
 import android.content.*;
 import android.os.IBinder;
+import android.util.Log;
 import client.pegasusclient.app.BL.Services.ConnectionService;
+import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.UI.Fragments.MainApp.MainAppPagerAdapter;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -16,8 +19,11 @@ import android.support.v4.view.ViewPager;
 public class MainPegasusClient extends FragmentActivity {
 
 
-    private ConnectionService mConnectionService;       //Bluetooth conneciton service
-    private boolean mHasServerStarted;
+    private ConnectionService mConnectionService;       //Bluetooth connection service
+    private boolean mHasBTServiceStarted;
+
+    private HotspotConnectivityService mHotspotConnectivityService;
+    private boolean mHashHotspotServiceStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +62,8 @@ public class MainPegasusClient extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mConnectionService != null) {
-            mConnectionService.stopSelf();      //kill connection service
-            mConnectionService = null;
-            mHasServerStarted = false;
-        }
+        killBluetoothConnectionService();
+        killHotspotConnectivityService();
     }
 
     @Override
@@ -68,6 +71,8 @@ public class MainPegasusClient extends FragmentActivity {
         super.onPause();
         if(mConnectionService != null)
             getApplicationContext().unbindService(BluetoothServiceConnection);
+        if(mHotspotConnectivityService !=null)
+            getApplicationContext().unbindService(hotspotConnectivityService);
     }
 
     @Override
@@ -75,6 +80,8 @@ public class MainPegasusClient extends FragmentActivity {
         super.onResume();
         if(mConnectionService != null)
          createBinnedConnectionManagerService();
+        if(mHotspotConnectivityService != null)
+            createBinnedHotspotConnectivityServiceService();
     }
 
 
@@ -85,9 +92,9 @@ public class MainPegasusClient extends FragmentActivity {
     private void createBinnedConnectionManagerService() {
         Intent connectionManagerServiceIntent = new Intent(this, ConnectionService.class);
         getApplicationContext().bindService(connectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
-        if(!mHasServerStarted) {
+        if(!mHasBTServiceStarted) {
             startService(connectionManagerServiceIntent);
-            mHasServerStarted = true;
+            mHasBTServiceStarted = true;
         }
     }
 
@@ -107,4 +114,57 @@ public class MainPegasusClient extends FragmentActivity {
                 getApplicationContext().unbindService(BluetoothServiceConnection);
         }
     };
+
+    /**
+     * destroy bluetooth connection service
+     */
+    private void killBluetoothConnectionService(){
+        if(mConnectionService != null) {
+            mConnectionService.stopSelf();      //kill connection service
+            mConnectionService = null;
+            mHasBTServiceStarted = false;
+        }
+    }
+
+    /**
+     * Bind to Hotspot Connection Manager Service
+     */
+    private void createBinnedHotspotConnectivityServiceService() {
+        Intent intent = new Intent(this, HotspotConnectivityService.class);
+        getApplicationContext().bindService(intent, hotspotConnectivityService, Context.BIND_AUTO_CREATE);
+        if(!mHashHotspotServiceStarted){
+            startService(intent);
+            mHasBTServiceStarted = true;
+        }
+    }
+
+    /**
+     * Create the service instance
+     */
+    private ServiceConnection hotspotConnectivityService = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            HotspotConnectivityService.MyLocalBinder hotspotConnectivityService = (HotspotConnectivityService.MyLocalBinder) service;
+            mHotspotConnectivityService = hotspotConnectivityService.gerService();
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            if (hotspotConnectivityService != null ) {
+                getApplicationContext().unbindService(hotspotConnectivityService);
+            }
+        }
+    };
+
+    /**
+     * destroy bluetooth connection service
+     */
+    private void killHotspotConnectivityService(){
+        if(mHotspotConnectivityService != null) {
+            mHotspotConnectivityService.stopSelf();      //kill connection service
+            mHotspotConnectivityService = null;
+            mHashHotspotServiceStarted = false;
+        }
+    }
 }

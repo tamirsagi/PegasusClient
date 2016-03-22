@@ -1,6 +1,7 @@
 package client.pegasusclient.app.UI.Fragments.manual_Control;
 
 import android.content.*;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -14,12 +15,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.SteeringService;
 import client.pegasusclient.app.UI.Activities.R;
+import client.pegasusclient.app.UI.Fragments.Camera.PegasusCamera;
 import client.pegasusclient.app.UI.Helper.SpeedometerGauge;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.github.pedrovgs.DraggablePanel;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,15 +37,16 @@ public class ManualControl extends Fragment {
     public static final String TAG = ManualControl.class.getSimpleName();
 
 
-    public enum DrivingDirection{
+    public enum DrivingDirection {
         FORWARD(0), REVERSE(1);
 
         private int value;
-        DrivingDirection(int value){
+
+        DrivingDirection(int value) {
             this.value = value;
         }
 
-        public int getValue(){
+        public int getValue() {
             return value;
         }
     }
@@ -84,7 +88,7 @@ public class ManualControl extends Fragment {
     private static final double MIN_DIGITAL_SPEED_RED_COLOR_RANGE = 220;
     private static final double MAX_DIGITAL_SPEED_RED_COLOR_RANGE = 255;
 
-    private final String degreeSymbol  = "\u00b0";
+    private final String degreeSymbol = "\u00b0";
 
 
     private View mRoot;
@@ -110,7 +114,14 @@ public class ManualControl extends Fragment {
     private DrivingDirection mLastDrivingDirection;
     private boolean mDirectionSet;
 
+    //Speedometer Gauge
     private SpeedometerGauge mSpeedometerGauge;
+
+    //FAB - Camera
+    private FloatingActionButton mFloatingActionButton;
+
+    //Draggable Panel
+    private DraggablePanel mDraggablePanel;
 
     public static ManualControl newInstance() {
         ManualControl mc = new ManualControl();
@@ -140,8 +151,22 @@ public class ManualControl extends Fragment {
         mTotalDistance = (TextView) mRoot.findViewById(R.id.manual_control_distance);
         mTotalDistance.setTypeface(mLedFont);
 
-        mDrivingDirection = (TextView) mRoot.findViewById(R.id.manual_control_driving_direction) ;
+        mDrivingDirection = (TextView) mRoot.findViewById(R.id.manual_control_driving_direction);
         mDrivingDirection.setTypeface(mLedFont);
+
+        mDraggablePanel = (DraggablePanel)mRoot.findViewById(R.id.manual_control_draggable_panel);
+        mDraggablePanel.setClickToMaximizeEnabled(true);
+        mDraggablePanel.setClickToMinimizeEnabled(true);
+
+        mFloatingActionButton = (FloatingActionButton)mRoot.findViewById(R.id.fab_camera);
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initializeDraggablePanel();
+                mDraggablePanel.setVisibility(View.VISIBLE);
+                mDraggablePanel.initializeView();
+            }
+        });
 
         setRadioGroup();
         SetSpeedometer();
@@ -198,7 +223,7 @@ public class ManualControl extends Fragment {
     /**
      * set Radio Button Group
      */
-    private void setRadioGroup(){
+    private void setRadioGroup() {
         mDrivingDirectionRadioGroup = (RadioGroup) mRoot.findViewById(R.id.manual_control_driving_direction_radio_group);
         mDrivingDirectionRadioGroup.clearCheck();
         mDrivingDirectionRadioGroup.check(R.id.manual_control_direction_forward);       //check Forward as Default
@@ -209,7 +234,7 @@ public class ManualControl extends Fragment {
                 mDirectionSet = false;
                 mSpeedometerGauge.clearColoredRanges();
                 mSpeedometerGauge.setSpeed(0);
-                switch(checkedId){
+                switch (checkedId) {
                     case R.id.manual_control_direction_forward:
                         mLastDrivingDirection = DrivingDirection.FORWARD;
                         mDrivingDirection.setText("D");
@@ -230,14 +255,14 @@ public class ManualControl extends Fragment {
     /**
      * Settings for speedometer gauge
      */
-    private void SetSpeedometer(){
+    private void SetSpeedometer() {
         mSpeedometerGauge = (SpeedometerGauge) mRoot.findViewById(R.id.speedometer);
         mSpeedometerGauge.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
             public String getLabelFor(double progress, double maxProgress) {
                 return String.valueOf((int) Math.round(progress));
-    }
-});
+            }
+        });
         // configure value range and ticks
         mSpeedometerGauge.setMaxSpeed(MAX_DIGITAL_SPEED_VALUE);
         mSpeedometerGauge.setMajorTickStep(30);
@@ -245,7 +270,16 @@ public class ManualControl extends Fragment {
         mSpeedometerGauge.setSpeed(0);
     }
 
-
+    /**
+     * set Draggable panel
+     * @throws Resources.NotFoundException
+     */
+    private void initializeDraggablePanel() throws Resources.NotFoundException {
+        mDraggablePanel.setVisibility(View.GONE);
+        mDraggablePanel.setFragmentManager(getFragmentManager());
+        mDraggablePanel.setTopFragment(PegasusCamera.getInstance());
+        mDraggablePanel.setBottomFragment(new Fragment());
+    }
 
     /**
      *            #####  Services ######
@@ -316,8 +350,8 @@ public class ManualControl extends Fragment {
                 case SteeringService.Sender_SteeringService:
                     int inclination = msg.getData().getInt(SteeringService.KEY_INCLINATION);
                     int rotation = msg.getData().getInt(SteeringService.KEY_ROTATION);
-                    if(mDirectionSet)
-                        handleSteeringChanges(rotation,inclination);
+                    if (mDirectionSet)
+                        handleSteeringChanges(rotation, inclination);
                     return true;
                 default:
                     return false;
@@ -327,48 +361,42 @@ public class ManualControl extends Fragment {
     });
 
 
-
-
-
     /**
      * Method handles inclination and rotation.
+     *
      * @param rotation
      * @param inclination
      */
-    private void handleSteeringChanges(int rotation, int inclination){
+    private void handleSteeringChanges(int rotation, int inclination) {
         int digitalSpeed = getDigitalSpeed(inclination, rotation);
         mSpeedometerGauge.clearColoredRanges();
         mSpeedometerGauge.setSpeed(mLastDigitalSpeed);
         mSpeed.setText("" + digitalSpeed);
         mRotation.setText("" + rotation + degreeSymbol);
-        if(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_GREEN_COLOR_RANGE)
+        if (MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_GREEN_COLOR_RANGE)
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE, mLastDigitalSpeed, Color.GREEN);
-        else if(MIN_DIGITAL_SPEED_YELLOW_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_YELLOW_COLOR_RANGE){
+        else if (MIN_DIGITAL_SPEED_YELLOW_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_YELLOW_COLOR_RANGE) {
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE, MAX_DIGITAL_SPEED_GREEN_COLOR_RANGE, Color.GREEN);
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_YELLOW_COLOR_RANGE, mLastDigitalSpeed, Color.YELLOW);
-        }
-        else if(MIN_DIGITAL_SPEED_RED_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_RED_COLOR_RANGE){
+        } else if (MIN_DIGITAL_SPEED_RED_COLOR_RANGE <= mLastDigitalSpeed && mLastDigitalSpeed <= MAX_DIGITAL_SPEED_RED_COLOR_RANGE) {
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_GREEN_COLOR_RANGE, MAX_DIGITAL_SPEED_GREEN_COLOR_RANGE, Color.GREEN);
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_YELLOW_COLOR_RANGE, MAX_DIGITAL_SPEED_YELLOW_COLOR_RANGE, Color.YELLOW);
             mSpeedometerGauge.addColoredRange(MIN_DIGITAL_SPEED_RED_COLOR_RANGE, mLastDigitalSpeed, Color.RED);
         }
 
         // Check if needs to be sent over Server
-        if(Math.abs(mLastDigitalSpeed - digitalSpeed) >= MIN_DIGITAL_SPEED_DELTA_TO_SEND
+        if (Math.abs(mLastDigitalSpeed - digitalSpeed) >= MIN_DIGITAL_SPEED_DELTA_TO_SEND
                 && digitalSpeed != mLastDigitalSpeed) {
             mLastDigitalSpeed = digitalSpeed;
             sendDigitalSpeedToServer(digitalSpeed);
         }
-        if(Math.abs(mLastSteeringAngle - rotation) >= MIN_ANGLE_DELTA_TO_SEND
-                && rotation != mLastSteeringAngle){
+        if (Math.abs(mLastSteeringAngle - rotation) >= MIN_ANGLE_DELTA_TO_SEND
+                && rotation != mLastSteeringAngle) {
             mLastSteeringAngle = rotation;
             String steerDirection = getSteeringDirection(mLastSteeringAngle);
-            if(!steerDirection.equals(STEERING_NONE))     //if it's R or L
+            if (!steerDirection.equals(STEERING_NONE))     //if it's R or L
                 sendSteeringAngleToServer(steerDirection, mLastSteeringAngle);
         }
-
-
-
 
 
     }
@@ -377,6 +405,7 @@ public class ManualControl extends Fragment {
      * Get Digital speed, we map range of inclination [74,90] to digital speed ->[100,0]
      * map inclination of a range[75,45] to digital speed -> [100,255]
      * using this equation :From Range[A,B] To [C,D] - > digitalSpeed = ( inclination - A)/(B-A) * (D-C) + C
+     *
      * @param inclination - phone inclination to Z axis
      * @param rotation    - phone rotation angle around XY plane;
      * @return digital speed [0,255]
@@ -385,11 +414,11 @@ public class ManualControl extends Fragment {
         if (inclination < MAX_RANGE_B && rotation >= 0)
             return MAX_DIGITAL_SPEED_VALUE;
         else if (MAX_RANGE_A <= inclination && inclination <= MIN_RANGE_A) {  //inclination between 74-90
-            return (int)((inclination - MIN_RANGE_A) / (MAX_RANGE_A - MIN_RANGE_A) *
+            return (int) ((inclination - MIN_RANGE_A) / (MAX_RANGE_A - MIN_RANGE_A) *
                     (MAX_DIGITAL_SPEED_RANGE_A - MIN_DIGITAL_SPEED_RANGE_A) +
                     MIN_DIGITAL_SPEED_RANGE_A);
         } else if (MAX_RANGE_B <= inclination && inclination <= MIN_RANGE_B) {       //inclination between 75-45
-            return (int)((inclination - MIN_RANGE_B) / (MAX_RANGE_B - MIN_RANGE_B) *
+            return (int) ((inclination - MIN_RANGE_B) / (MAX_RANGE_B - MIN_RANGE_B) *
                     (MAX_DIGITAL_SPEED_RANGE_B - MIN_DIGITAL_SPEED_RANGE_B) +
                     MIN_DIGITAL_SPEED_RANGE_B);
         } else
@@ -398,33 +427,34 @@ public class ManualControl extends Fragment {
 
     /**
      * method sends driving direction when its changed
-     * @param drivingDirection  - drivign direction (FORWARD , REVERSE);
+     *
+     * @param drivingDirection - drivign direction (FORWARD , REVERSE);
      */
-    private void sendDrivingDirection(DrivingDirection drivingDirection){
+    private void sendDrivingDirection(DrivingDirection drivingDirection) {
 
         JSONObject messageToServer = new JSONObject();
         try {
             messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(),General.Action_Type.VEHICLE_ACTION.toString());
+            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
             messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.CHANGE_DIRECTION.toString());
             messageToServer.put(KEY_DRIVING_DIRECTION, drivingDirection.toString());
-            if(mConnectionService.isConnectedToRemoteDevice())
+            if (mConnectionService.isConnectedToRemoteDevice())
                 mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
-        }catch (JSONException e){
+        } catch (JSONException e) {
 
         }
 
     }
 
 
-
     /**
      * Function get Steering direction based on rotation angle
-     * @param rotation  - phone rotation angle around XY plane;
+     *
+     * @param rotation - phone rotation angle around XY plane;
      * @return - Direction
      */
-    private String getSteeringDirection(int rotation){
-        if(0 <= rotation && rotation <= STRAIGHT_STEERING_ANGLE)
+    private String getSteeringDirection(int rotation) {
+        if (0 <= rotation && rotation <= STRAIGHT_STEERING_ANGLE)
             return STEERING_RIGHT;       //right when angle is 0-90 degrees
         else if (STRAIGHT_STEERING_ANGLE < rotation && rotation <= 2 * MAX_STEERING_ANGLE)
             return STEERING_LEFT;       //Left when angle is 90-180 degrees
@@ -433,48 +463,50 @@ public class ManualControl extends Fragment {
 
     /**
      * Method sends digital speed to server
+     *
      * @param digitalSpeed
      */
-    private void sendDigitalSpeedToServer(int digitalSpeed){
+    private void sendDigitalSpeedToServer(int digitalSpeed) {
         JSONObject messageToServer = new JSONObject();
         try {
             messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(),General.Action_Type.VEHICLE_ACTION.toString());
+            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
             messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.CHANGE_SPEED.toString());
             messageToServer.put(KEY_DIGITAL_SPEED, digitalSpeed);
-            if(mConnectionService.isConnectedToRemoteDevice())
+            if (mConnectionService.isConnectedToRemoteDevice())
                 mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
-        }catch (JSONException e){
+        } catch (JSONException e) {
 
         }
     }
 
     /**
      * method sends steering angle to server
+     *
      * @param steerDirection - R = Right or L = Left
      * @param rotation       - Angle 0 - 40 degrees
      */
-    private void sendSteeringAngleToServer(String steerDirection, double rotation){
+    private void sendSteeringAngleToServer(String steerDirection, double rotation) {
         JSONObject messageToServer = new JSONObject();
         try {
             messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(),General.Action_Type.VEHICLE_ACTION.toString());
+            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
             messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.STEERING.toString());
-            if(rotation < MIN_STEERING_ANGLE)
+            if (rotation < MIN_STEERING_ANGLE)
                 rotation = MIN_STEERING_ANGLE;
-            else if(rotation > MAX_STEERING_ANGLE)
+            else if (rotation > MAX_STEERING_ANGLE)
                 rotation = MAX_STEERING_ANGLE;
             messageToServer.put(KEY_STEERING_DIRECTION, steerDirection);
 
             // convert the rotation angle to 0-40
-            if(steerDirection.equals(STEERING_RIGHT))
+            if (steerDirection.equals(STEERING_RIGHT))
                 rotation = STRAIGHT_STEERING_ANGLE - rotation;
             else
                 rotation -= STRAIGHT_STEERING_ANGLE;
             messageToServer.put(KEY_ROTATION_ANGLE, rotation);
-            if(mConnectionService.isConnectedToRemoteDevice())
+            if (mConnectionService.isConnectedToRemoteDevice())
                 mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
-        }catch (JSONException e){
+        } catch (JSONException e) {
 
         }
     }

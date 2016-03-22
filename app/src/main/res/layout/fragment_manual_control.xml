@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:fab="http://schemas.android.com/apk/res-auto"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:background="#000000"
@@ -144,5 +145,18 @@
               android:layout_below="@+id/manual_control_speed_units"
               android:layout_alignStart="@+id/manual_control_distance"/>
 
+    <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/camera_icon"
+            android:layout_above="@+id/manual_control_rotation"
+            android:layout_alignParentStart="true"/>
+
+    <com.github.pedrovgs.DraggablePanel
+            android:id="@+id/manual_control_draggable_panel"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="gone"/>
 
 </RelativeLayout>

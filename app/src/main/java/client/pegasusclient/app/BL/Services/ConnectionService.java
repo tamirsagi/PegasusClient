@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import client.pegasusclient.app.BL.Enums.EBluetoothStates;
 import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.BL.Interfaces.IBluetoothSocketWrapper;
 import client.pegasusclient.app.BL.Bluetooth.NativeBluetoothSocket;
@@ -22,15 +23,15 @@ import client.pegasusclient.app.BL.Interfaces.onMessageReceivedListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 /**
  * @author Tamir Sagi
- *         This class handle conneciton to remote device
+ *         This class handle conneciton to remote device over bluetooth
  *         it keeps a inner class which extends a thread to handle the connection read and write
  */
 public class ConnectionService extends Service implements onMessageReceivedListener {
 
-    private IBinder mConnectionManagerService  = new MyLocalBinder();
-
+    private IBinder mConnectionManagerService = new MyLocalBinder();
 
     // Debugging
     private static final String TAG = "ConnectionService";
@@ -39,10 +40,11 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     // Member fields
     private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
-    private ConnectionManager mConnectionService = new ConnectionManager(this);
+    //  private ConnectionManager mConnectionService = new ConnectionManager(this);
     private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
-    private int mState;
-    private HashMap<String,Handler> handlers;       //used to keep handler for several fragments across the app
+    private ConnectionManager mConnectionManager;
+    private EBluetoothStates mBluetoothConnectionState;
+    private HashMap<String, Handler> handlers;       //used to keep handler for several fragments across the app
     /**
      * Standard SerialPortService ID
      * the UUID on the client must match one that the other device (server mode) is listening for
@@ -53,19 +55,14 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      * When attempting to make a connection, . When accepting incoming connections server listens for all 7 UUIDs.
      */
 
-    // Constants that indicate the current connection state
-    public static final int STATE_DISCONNECTED = -1;            //we are disconnected
-    public static final int STATE_NONE = 0;                     // we're doing nothing
-    public static final int STATE_CONNECTING = 1;               // now initiating an outgoing connection
-    public static final int STATE_CONNECTED = 2;                // now setConnectionManager to a remote device
-
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
-        mState = STATE_NONE;
-        handlers =  new HashMap<String, Handler>();
+        mBluetoothConnectionState = EBluetoothStates.DISCONNECTED;
+        handlers = new HashMap<String, Handler>();
+        mConnectionManager = new ConnectionManager();
+        mConnectionManager.registerListener(this);
         return mConnectionManagerService;
     }
 
@@ -73,8 +70,6 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);
     }
-
-
 
 
     public class MyLocalBinder extends Binder {
@@ -87,18 +82,20 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
     /**
      * Register fragment to service in order to get messages from the server
-     * @param tag fragment id
+     *
+     * @param tag     fragment id
      * @param handler Handler to send messages
      */
-    public void registerToMeesagesService(String tag,Handler handler){
-        handlers.put(tag,handler);
+    public void registerToMeesagesService(String tag, Handler handler) {
+        handlers.put(tag, handler);
     }
 
     /**
      * remove handler from the map
+     *
      * @param tag
      */
-    public void removeHandler(String tag){
+    public void removeHandler(String tag) {
         handlers.remove(tag);
     }
 
@@ -106,20 +103,20 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     /**
      * Set the current state of the chat connection
      *
-     * @param state An integer defining the current connection state
+     * @param btState An integer defining the current connection state
      */
-    private void setState(int state) {
+    private void setState(EBluetoothStates btState) {
         if (debugging)
-            Log.d(TAG, "setState() " + mState + " -> " + state);
+            Log.d(TAG, "setState() " + mBluetoothConnectionState + " -> " + btState);
 
-        mState = state;
+        mBluetoothConnectionState = btState;
     }
 
     /**
      * Return the current connection state.
      */
-    public int getState() {
-        return mState;
+    public EBluetoothStates getState() {
+        return mBluetoothConnectionState;
     }
 
     /**
@@ -128,13 +125,14 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      * @param remoteDevice The BluetoothDevice to connectToRemoteDevice
      */
     public boolean connectToRemoteDevice(BluetoothDevice remoteDevice) {
-      if (debugging) Log.d(TAG, "connect to: " + remoteDevice);
+        if (debugging) Log.d(TAG, "connectToPegasusAP to: " + remoteDevice);
         try {
-            if (isConnectedToRemoteDevice() ||  socketStillAlive())
+            if (isConnectedToRemoteDevice() || socketStillAlive())
                 disconnectFromRemoteDevice();           //if socket is exist disconnect from it
-            setState(STATE_CONNECTING);
-            mConnectionService.connectToRemoteDevice(remoteDevice, mSharedUUID);
-            mConnectionService.start();             //start the thread to handle socket
+            setState(EBluetoothStates.CONNECTING);
+            mConnectionManager.connectToRemoteDevice(remoteDevice, mSharedUUID);
+            mConnectionManager.start();             //start the thread to handle socket
+            setState(EBluetoothStates.CONNECTED);
             return true;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -148,15 +146,14 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     public void disconnectFromRemoteDevice() {
         if (debugging)
             Log.d(TAG, "disconnect FromRemote Device");
-        setState(STATE_DISCONNECTED);
-        if (mConnectionService != null && mConnectionService.socketStillAlive()) {
-            mConnectionService.closeSocket();
-            mConnectionService = null;
+        if (mConnectionManager != null && mConnectionManager.socketStillAlive()) {
+            mConnectionManager.closeSocket();
+            setState(EBluetoothStates.DISCONNECTED);
         }
     }
 
     public void sendMessageToRemoteDevice(String msg) {
-        mConnectionService.writeToSocket(msg);
+        mConnectionManager.writeToSocket(msg);
     }
 
 
@@ -166,10 +163,9 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     private void connectionFailed() {
         if (debugging)
             Log.d(TAG, "connection Failed");
-        setState(STATE_DISCONNECTED);
-        if (mConnectionService != null) {
-            mConnectionService.closeSocket();
-            mConnectionService = null;
+        setState(EBluetoothStates.DISCONNECTED);
+        if (mConnectionManager != null) {
+            mConnectionManager.closeSocket();
         }
     }
 
@@ -177,7 +173,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      * Indicate that the connection was lost and notify the UI Activity.
      */
     private void connectionLost() {
-        setState(STATE_CONNECTING);
+        setState(EBluetoothStates.CONNECTING);
         // Send a failure message back to the Activity
         //  updateActivity(General.MessageType.ERROR, General.OnDeviceConnectionLost);
     }
@@ -193,28 +189,23 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      * @return
      */
     public boolean isConnectedToRemoteDevice() {
-        if (mConnectionService != null)
-            return mConnectionService.isConnected();
-        return false;
+        return mConnectionManager.isConnected();
     }
 
-    public boolean socketStillAlive(){
-        if (mConnectionService != null)
-            return mConnectionService.socketStillAlive();
-        return false;
+    public boolean socketStillAlive() {
+        return mConnectionManager.socketStillAlive();
     }
 
     /**
      * @return remote bluetooth device
      */
     public BluetoothDevice getRemoteBluetoothDevice() {
-        return mConnectionService.getRemoteBluetoothDevice();
+        return mConnectionManager.getRemoteBluetoothDevice();
     }
 
 
-
     /**
-     *     Handle connection is a separate Thread
+     * Handle connection is a separate Thread
      */
 
 
@@ -222,8 +213,6 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     public void onMessageReceived(String receivedMessage) {
         try {
             JSONObject jsonFromString = new JSONObject(receivedMessage);
-
-
 
 
         } catch (JSONException e) {
@@ -238,17 +227,23 @@ public class ConnectionService extends Service implements onMessageReceivedListe
      */
     private class ConnectionManager extends Thread {
 
-        private BluetoothDevice mRemoteDevice;    //remote device which we connect to
+        private BluetoothDevice mRemoteDevice;    //remote device which we connectToPegasusAP to
         private IBluetoothSocketWrapper bluetoothSocket;
         private UUID mUUID;
-        private onMessageReceivedListener listener;
+        private onMessageReceivedListener mListener;
 
-        public ConnectionManager(onMessageReceivedListener listener){
-            this.listener = listener;
+
+
+        public ConnectionManager() {
+        }
+
+        public void registerListener(onMessageReceivedListener listener) {
+            mListener = listener;
         }
 
         /**
          * Connect to Bluetooth Device
+         *
          * @param remoteDevice
          * @param uuidToTry
          * @return whether succeed or not
@@ -268,15 +263,11 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
             Log.i(TAG, "BEGIN mConnectThread");
             setName("ConnectThread");
-            if (bluetoothSocket.getSocket() != null)
-                // Always cancel discovery because it will slow down a connection
-                mAdapter.cancelDiscovery();
             try {
                 connectToSocket();
-                setState(STATE_CONNECTED);
             } catch (IOException e) {
                 Log.e(TAG, e.getMessage());
-                throw new IOException(TAG + " Could not connect to Socket",e);
+                throw new IOException(TAG + " Could not connectToPegasusAP to Socket", e);
             }
         }
 
@@ -287,7 +278,6 @@ public class ConnectionService extends Service implements onMessageReceivedListe
                     readFromSocket();
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected: " + e.getMessage());
-                    connectionLost();
                     break;
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -297,6 +287,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
         /**
          * Connect to current soccket and save input and output streams
+         *
          * @throws IOException
          */
         private void connectToSocket() throws IOException {
@@ -307,6 +298,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
         /**
          * Read from the InputStream
+         *
          * @throws IOException
          */
         public void readFromSocket() throws IOException, JSONException {
@@ -315,7 +307,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
                 byte[] msg = new byte[bytesAvailable];
                 bluetoothSocket.getInputStream().read(msg);
                 String receivedMessage = new String(msg);
-                listener.onMessageReceived(receivedMessage);        //fire the message to the service
+                mListener.onMessageReceived(receivedMessage);        //fire the message to the service
                 Log.i(TAG, "receivedMessage: " + receivedMessage);
             }
         }
@@ -323,6 +315,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
         /**
          * Write to the setConnectionManager OutStream.
+         *
          * @param msg The bytes to writeToSocket
          */
         public synchronized void writeToSocket(String msg) {
@@ -349,17 +342,18 @@ public class ConnectionService extends Service implements onMessageReceivedListe
          * @return connection state
          */
         public boolean isConnected() {
-            if(bluetoothSocket != null)
+            if (bluetoothSocket != null)
                 return bluetoothSocket.isConnected();
             return false;
         }
 
         /**
          * Method checks whether the socket is still alive, means not null
+         *
          * @return
          */
-        public boolean socketStillAlive(){
-            if(bluetoothSocket != null)
+        public boolean socketStillAlive() {
+            if (bluetoothSocket != null)
                 return bluetoothSocket.getSocket() != null;
             return false;
         }

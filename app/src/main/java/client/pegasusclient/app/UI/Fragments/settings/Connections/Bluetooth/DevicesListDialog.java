@@ -27,9 +27,9 @@ import java.util.Set;
 
 /**
  * @author Tamir Sagi
- * this class is a bluetooh devices dialog. it shows paired and new devices around using bluetooth adapter
+ *         this class is a bluetooh devices dialog. it shows paired and new devices around using bluetooth adapter
  */
-public class DevicesListDialog extends DialogFragment implements BluetoothDevicesListListener{
+public class DevicesListDialog extends DialogFragment implements BluetoothDevicesListListener {
 
     // Debugging
     public static final String TAG = "Devices Dialog";
@@ -73,8 +73,8 @@ public class DevicesListDialog extends DialogFragment implements BluetoothDevice
 
         // Initialize array adapters. One for already paired devices and
         // one for newly discovered devices
-        mPairedDevicesRecyclerList = new BluetoothDevicesRecyclerAdapter(getContext(),R.layout.bluetooth_dialog_device_details,this);
-        mDevicesAroundRecyclerList = new BluetoothDevicesRecyclerAdapter(getContext(),R.layout.bluetooth_dialog_device_details,this);
+        mPairedDevicesRecyclerList = new BluetoothDevicesRecyclerAdapter(getContext(), R.layout.bluetooth_dialog_device_details, this);
+        mDevicesAroundRecyclerList = new BluetoothDevicesRecyclerAdapter(getContext(), R.layout.bluetooth_dialog_device_details, this);
 
         // Find and set up the List for new devices
         ListView devicesAround = (ListView) rootView.findViewById(R.id.bluetooth_dialog_devices_around_list);
@@ -116,8 +116,6 @@ public class DevicesListDialog extends DialogFragment implements BluetoothDevice
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-
 
 
     }
@@ -180,7 +178,7 @@ public class DevicesListDialog extends DialogFragment implements BluetoothDevice
 
     @Override
     public void getBluetoothDeviceToConnect(View v, String btDeviceAddress) {
-        // Cancel discovery because it's costly and we're about to connect
+        // Cancel discovery because it's costly and we're about to connectToPegasusAP
         mBtAdapter.cancelDiscovery();
 
         // Create the result Intent and include the MAC address

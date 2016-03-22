@@ -31,6 +31,9 @@ public class MainBluetoothFragment extends Fragment {
     private static final String KEY_REMOTE_NAME = "Remote Device Name";
     private static final String KEY_REMOTE_ADDRESS = "Remote Device Address";
     private static final String KEY_REMOTE_SIGNAL = "Remote Device Signal";
+    private static final String KEY_REMOTE_UNKNOWN = "Unknown";
+
+    private Context mContext;
 
     // Intent request codes
     public static final int NONE = -1;
@@ -71,6 +74,7 @@ public class MainBluetoothFragment extends Fragment {
         //A retained fragment is not destroyed during a configuration change and can be reconnected to an activity after the change
         setRetainInstance(true);
         createBinnedConnectionManagerService();
+        mContext = getContext();
 
 
     }
@@ -83,7 +87,7 @@ public class MainBluetoothFragment extends Fragment {
         return root;
     }
 
-    private void prepareBluetoothSettings(){
+    private void prepareBluetoothSettings() {
         mBluetoothStatus = (TextView) root.findViewById(R.id.setting_bluetooth_status_context);
         // If the adapter is null, then Bluetooth is not supported
         if (mConnectionService.getAdapter() == null) {
@@ -106,8 +110,8 @@ public class MainBluetoothFragment extends Fragment {
 
             //If bluetooth is enabled and we are connected to the same one
             if (isBluetoothEnabled && stillConnectedToLastKnownDevice()) {
-                mRemoteDeviceName.setText(PreferencesManager.getInstance().getString(KEY_REMOTE_NAME));
-                mRemoteDeviceAddress.setText(PreferencesManager.getInstance().getString(KEY_REMOTE_ADDRESS));
+                mRemoteDeviceName.setText(PreferencesManager.getInstance(mContext).getString(KEY_REMOTE_NAME, KEY_REMOTE_UNKNOWN));
+                mRemoteDeviceAddress.setText(PreferencesManager.getInstance(mContext).getString(KEY_REMOTE_ADDRESS, KEY_REMOTE_UNKNOWN));
             }
 
 
@@ -156,7 +160,7 @@ public class MainBluetoothFragment extends Fragment {
         boolean answer = false;
         if (mConnectionService.isConnectedToRemoteDevice()) {
             BluetoothDevice remote = mConnectionService.getRemoteBluetoothDevice();
-            answer = remote.getAddress().equals(PreferencesManager.getInstance().getString(KEY_REMOTE_ADDRESS,"unknown"));
+            answer = remote.getAddress().equals(PreferencesManager.getInstance(mContext).getString(KEY_REMOTE_ADDRESS, KEY_REMOTE_UNKNOWN));
         }
         return answer;
     }
@@ -173,7 +177,7 @@ public class MainBluetoothFragment extends Fragment {
     public void onResume() {
         super.onResume();
         // If BT is not on, request that it be enabled.
-        if(!boundToConnectionService) {
+        if (!boundToConnectionService) {
             createBinnedConnectionManagerService();             //when resume,  bind to Connection Manager Service again
             isBluetoothEnabled = mConnectionService.getAdapter().isEnabled();
             setDeviceState(isBluetoothEnabled);
@@ -188,7 +192,7 @@ public class MainBluetoothFragment extends Fragment {
             getActivity().unregisterReceiver(bluetoothState);   //unregister from the broadcast receiver
             isRegisteredToBroadcastReceiver = false;
         }
-        if(boundToConnectionService) {
+        if (boundToConnectionService) {
             getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
             boundToConnectionService = false;
         }
@@ -202,8 +206,6 @@ public class MainBluetoothFragment extends Fragment {
         requestDiscoverable = false;
 
     }
-
-
 
 
     /**
@@ -229,7 +231,7 @@ public class MainBluetoothFragment extends Fragment {
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
-            if(boundToConnectionService) {
+            if (boundToConnectionService) {
                 getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
                 boundToConnectionService = false;
             }
@@ -246,7 +248,6 @@ public class MainBluetoothFragment extends Fragment {
     private void showToastMessage(String toastMsg) {
         Toast.makeText(getActivity(), toastMsg, Toast.LENGTH_LONG).show();
     }
-
 
     /**
      * get an update when bluetooth state is changed
@@ -329,21 +330,20 @@ public class MainBluetoothFragment extends Fragment {
                 showOtherBluetoothDevices();
                 break;
             case REQUEST_CONNECT_DEVICE:
-                // When DeviceListActivity returns with a device to connect
+                // When DeviceListActivity returns with a device to connectToPegasusAP
                 String btDeviceAddress = data.getExtras().getString(DevicesListDialog.EXTRA_DEVICE_ADDRESS);
                 // Get the BluetoothDevice object
                 BluetoothDevice remoteDevice = mConnectionService.
                         getAdapter().getRemoteDevice(btDeviceAddress);
-                // Attempt to connect to the device
+                // Attempt to connectToPegasusAP to the device
                 boolean succeed = mConnectionService.connectToRemoteDevice(remoteDevice);
                 if (succeed) {
                     BluetoothDeviceInfo device = new BluetoothDeviceInfo(remoteDevice, 0);
                     mRemoteDeviceName.setText(device.getName());
                     mRemoteDeviceAddress.setText(device.getAddress());
-                    PreferencesManager.getInstance().put(KEY_REMOTE_NAME,device.getName());
-                    PreferencesManager.getInstance().put(KEY_REMOTE_ADDRESS,device.getAddress());
-                }
-                else
+                    PreferencesManager.getInstance(mContext).put(KEY_REMOTE_NAME, device.getName());
+                    PreferencesManager.getInstance(mContext).put(KEY_REMOTE_ADDRESS, device.getAddress());
+                } else
                     showAlertDialog(remoteDevice.getName());
                 break;
         }
@@ -387,10 +387,11 @@ public class MainBluetoothFragment extends Fragment {
     }
 
     /**
-     * show alert message when could not connect to remote device
+     * show alert message when could not connectToPegasusAP to remote device
+     *
      * @param deviceName
      */
-    private void showAlertDialog(String deviceName){
+    private void showAlertDialog(String deviceName) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Dialog));
         builder.setTitle("Connection Error");
         builder.setMessage(deviceName + " Is Not Available");

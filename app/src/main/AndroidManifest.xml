@@ -14,6 +14,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
 
     <application
@@ -45,6 +48,11 @@
         </service>
 
         <service android:name="client.pegasusclient.app.BL.Services.SteeringService"
+                 android:enabled="true"
+                 android:exported="true">
+        </service>
+
+        <service android:name="client.pegasusclient.app.BL.Services.HotspotConnectivityService"
                  android:enabled="true"
                  android:exported="true">
         </service>

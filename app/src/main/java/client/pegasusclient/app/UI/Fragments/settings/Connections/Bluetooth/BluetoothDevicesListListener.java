@@ -9,7 +9,7 @@ import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
 public interface BluetoothDevicesListListener {
 
     /**
-     * get the bluetooth device to connect
+     * get the bluetooth device to connectToPegasusAP
      * @param btDeviceAddress - bluetooth mac address
      */
     void getBluetoothDeviceToConnect(View v, String btDeviceAddress);
