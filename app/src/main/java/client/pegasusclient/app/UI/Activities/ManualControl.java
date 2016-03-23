@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -161,12 +162,12 @@ public class ManualControl extends AppCompatActivity {
                         mDraggablePanel.initializeView();
                     }else{
                         Toast.makeText(ManualControl.this, "Please Connect To Pegasus AP", Toast.LENGTH_SHORT).show();
+                        //redirect to wifi settings
+                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                     }
                 }
-
             }
         });
-
 
         setRadioGroup();
         SetSpeedometer();
@@ -192,7 +193,6 @@ public class ManualControl extends AppCompatActivity {
             mSteeringService.unregisterHandler(TAG);
             unbindService(SteeringServiceConnection);
             mIsSteeringServiceBinned = false;
-
         }
 
         if(mIsBoundToHotSpotService){

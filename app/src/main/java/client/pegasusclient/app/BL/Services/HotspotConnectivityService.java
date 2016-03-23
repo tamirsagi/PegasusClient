@@ -192,7 +192,7 @@ public class HotspotConnectivityService extends Service {
             return false;
 
         final WifiInfo connectionInfo = mWifiManager.getConnectionInfo();
-        if (connectionInfo != null && connectionInfo.getSSID().equals(mPegasusHotspotSSID)) {
+        if (connectionInfo != null && connectionInfo.getSSID().equals("\"" + mPegasusHotspotSSID + "\"")) {
             setHotSpotStatus(EHotSpotStatus.CONNECTED);
             return true;
         }
