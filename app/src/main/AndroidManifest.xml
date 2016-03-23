@@ -37,9 +37,14 @@
             android:label="pegasus"
             android:screenOrientation="landscape" >
         </activity>
+        <activity
+            android:name=".PegasusSettings"
+            android:label="pegasus"
+            android:screenOrientation="landscape" >
+        </activity>
 
         <activity
-                android:name=".PegasusSettings"
+                android:name=".About"
                 android:label="pegasus"
                 android:screenOrientation="landscape" >
         </activity>

@@ -102,7 +102,8 @@ public class MainApp extends AppCompatActivity {
      * @param view
      */
     public void onButtonAboutClicked(View view) {
-
+        Intent about = new Intent(this, About.class);
+        startActivity(about);
     }
 
     /**

@@ -161,7 +161,7 @@ public class ManualControl extends AppCompatActivity {
                         mDraggablePanel.setVisibility(View.VISIBLE);
                         mDraggablePanel.initializeView();
                     }else{
-                        Toast.makeText(ManualControl.this, "Please Connect To Pegasus AP", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ManualControl.this, "Please Connect To Pegasus AP", Toast.LENGTH_LONG).show();
                         //redirect to wifi settings
                         startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                     }
