@@ -1,4 +1,4 @@
-package client.pegasusclient.app.UI.Fragments.manual_Control;
+package client.pegasusclient.app.UI.Activities;
 
 import android.content.*;
 import android.content.res.Resources;
@@ -10,16 +10,14 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.SteeringService;
-import client.pegasusclient.app.UI.Activities.R;
-import client.pegasusclient.app.UI.Fragments.Camera.PegasusCamera;
+import client.pegasusclient.app.UI.Fragments.PegasusCamera;
 import client.pegasusclient.app.UI.Helper.SpeedometerGauge;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.github.pedrovgs.DraggablePanel;
@@ -32,7 +30,7 @@ import org.json.JSONObject;
  *         digital speed on Arduino(0-255)
  *         0-40 degrees Steering Angle each side
  */
-public class ManualControl extends Fragment {
+public class ManualControl extends AppCompatActivity {
 
     public static final String TAG = ManualControl.class.getSimpleName();
 
@@ -123,23 +121,14 @@ public class ManualControl extends Fragment {
     //Draggable Panel
     private DraggablePanel mDraggablePanel;
 
-    public static ManualControl newInstance() {
-        ManualControl mc = new ManualControl();
-        return mc;
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_manual_control);
         createBinnedConnectionManagerService();
         createBinnedSteeringService();
-    }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mRoot = inflater.inflate(R.layout.fragment_manual_control, container, false);
-        Typeface mLedFont = Typeface.createFromAsset(getActivity().getAssets(),
+        Typeface mLedFont = Typeface.createFromAsset(getAssets(),
                 "fonts/digital-7/digital-7_mono.ttf");
 
         mSpeed = (TextView) mRoot.findViewById(R.id.manual_control_speed);
@@ -170,7 +159,6 @@ public class ManualControl extends Fragment {
 
         setRadioGroup();
         SetSpeedometer();
-        return mRoot;
     }
 
 
@@ -186,16 +174,16 @@ public class ManualControl extends Fragment {
         super.onPause();
 
         if (mIsConnectionManagerBinned) {
-            getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
+            getApplicationContext().unbindService(BluetoothServiceConnection);
             mIsConnectionManagerBinned = false;
         }
 
         if (mIsSteeringServiceBinned) {
             mSteeringService.unregisterListener();
             mSteeringService.unregisterHandler(TAG);
-            getActivity().getApplicationContext().unbindService(SteeringServiceConnection);
+            getApplicationContext().unbindService(SteeringServiceConnection);
             mIsSteeringServiceBinned = false;
-            getActivity().getApplicationContext().stopService(mSteeringServiceIntent);
+            getApplicationContext().stopService(mSteeringServiceIntent);
         }
     }
 
@@ -276,7 +264,7 @@ public class ManualControl extends Fragment {
      */
     private void initializeDraggablePanel() throws Resources.NotFoundException {
         mDraggablePanel.setVisibility(View.GONE);
-        mDraggablePanel.setFragmentManager(getFragmentManager());
+        mDraggablePanel.setFragmentManager(getSupportFragmentManager());
         mDraggablePanel.setTopFragment(PegasusCamera.getInstance());
         mDraggablePanel.setBottomFragment(new Fragment());
     }
@@ -290,8 +278,8 @@ public class ManualControl extends Fragment {
      * to Bluetooth Connection Manager Service
      */
     private void createBinnedConnectionManagerService() {
-        mConnectionManagerServiceIntent = new Intent(getActivity(), ConnectionService.class);
-        getActivity().getApplicationContext().bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+        mConnectionManagerServiceIntent = new Intent(this, ConnectionService.class);
+        getApplicationContext().bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
         mIsConnectionManagerBinned = true;
     }
 
@@ -308,7 +296,7 @@ public class ManualControl extends Fragment {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             if (mIsConnectionManagerBinned) {
-                getActivity().getApplicationContext().unbindService(BluetoothServiceConnection);
+                getApplicationContext().unbindService(BluetoothServiceConnection);
                 mIsConnectionManagerBinned = false;
             }
         }
@@ -316,9 +304,9 @@ public class ManualControl extends Fragment {
 
 
     private void createBinnedSteeringService() {
-        mSteeringServiceIntent = new Intent(getActivity(), SteeringService.class);
-        getActivity().getApplicationContext().bindService(mSteeringServiceIntent, SteeringServiceConnection, Context.BIND_AUTO_CREATE);
-        getActivity().getApplicationContext().startService(mSteeringServiceIntent);
+        mSteeringServiceIntent = new Intent(this, SteeringService.class);
+        getApplicationContext().bindService(mSteeringServiceIntent, SteeringServiceConnection, Context.BIND_AUTO_CREATE);
+        getApplicationContext().startService(mSteeringServiceIntent);
         mIsSteeringServiceBinned = true;
 
     }

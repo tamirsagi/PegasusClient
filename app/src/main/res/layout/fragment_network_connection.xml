@@ -1,7 +1,7 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" xmlns:fab="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:background="#263238"
         android:id="@+id/setting_network_connection">
@@ -23,22 +23,13 @@
                     android:layout_alignBottom="@+id/local_name_separator"
                     android:layout_toEndOf="@+id/setting_bluetooth_remote_device_signal"/>
 
-            <ImageButton
-                    android:id="@+id/setting_connection_refresh_icon"
-                    android:layout_gravity="center"
-                    android:layout_width="50dp"
-                    android:layout_height="55dp"
-                    android:background="@drawable/settings_network_connections_refresh_icon"
-                    android:layout_alignParentTop="true" android:layout_toEndOf="@+id/title_separator"/>
-
             <ImageView
                     android:id="@+id/setting_connection_bt_title_icon"
                     android:layout_gravity="center"
                     android:layout_width="100dp"
                     android:layout_height="70dp"
                     android:src="@drawable/setting_bt_icon"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignStart="@+id/title_separator"/>
+                    android:layout_alignParentTop="true" android:layout_alignStart="@+id/title_separator"/>
 
             <TextView
                     android:id="@+id/setting_title"
@@ -95,13 +86,6 @@
                     android:layout_centerHorizontal="true"
                     android:layout_below="@+id/setting_bluetooth_status_context"/>
 
-            <ImageButton
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:visibility="gone"
-                    android:background="@null"
-                    android:id="@+id/setting_bluetooth_enable_bth"
-                    android:layout_alignTop="@+id/title_separator" android:layout_alignEnd="@+id/title_separator"/>
 
             <TextView
                     android:id="@+id/setting_bluetooth_local_device_name"
@@ -167,15 +151,32 @@
                     android:layout_centerHorizontal="true"
                     android:layout_below="@+id/setting_bluetooth_local_device_address_context"/>
 
-            <ImageButton
-                    android:id="@+id/setting_connection_bt_discover_icon"
-                    android:layout_gravity="center"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bluetooth_discover_icon"
-                    android:layout_marginEnd="44dp"
-                    android:layout_below="@+id/progressBar"
-                    android:layout_toStartOf="@+id/setting_connection_refresh_icon"/>
+            <com.getbase.floatingactionbutton.FloatingActionsMenu
+                    android:id="@+id/bluetooth_settings_action_buttons_menu"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_alignBottom="@+id/setting_bluetooth_remote_device_name"
+                    android:layout_alignParentEnd="true">
+
+             <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab_find_devices"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        fab:fab_title="Other Devices"
+                        fab:fab_icon="@drawable/bluetooth_discover_icon"
+                        android:layout_alignBottom="@+id/title_separator" android:layout_toEndOf="@+id/setting_title"/>
+
+                <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab_change_status"
+                        android:layout_width="wrap_content"
+                        fab:fab_title="Change State"
+                        android:layout_height="wrap_content"
+                        fab:fab_icon="@drawable/power_icon"
+                        android:layout_alignBottom="@+id/title_separator" android:layout_toEndOf="@+id/setting_title"/>
+
+
+            </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
 
             <TextView
                     android:id="@+id/setting_bluetooth_remote_device_name"

@@ -1,54 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#263238"
-        android:id="@+id/main_app_login"
-        android:layout_width="match_parent">
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    tools:context=".MainApp">
-
-        <TextView
-                android:text="@string/intro"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/textView"
-                android:layout_marginBottom="36dp"
-                android:layout_above="@+id/userName"
-                android:textSize="20dp"
-        />
-
-        <EditText
-                android:id="@+id/userName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_userName"
-                android:ems="10" android:layout_centerVertical="true" android:layout_alignStart="@+id/userNamePwd">
-        </EditText>
-
-        <EditText
-                android:id="@+id/userNamePwd"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:hint="@string/hint_userNamePwd"
-                android:ems="10" android:layout_below="@+id/userName" android:layout_centerHorizontal="true">
-        </EditText>
-
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bth_login"
-                android:onClick="onButtonLoginClick"
-                android:id="@+id/button"
-                android:layout_below="@+id/userNamePwd"
-                android:layout_centerHorizontal="true"/>
 
 
-    </RelativeLayout>
-</FrameLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/main_app_background"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                tools:context=".MainApp">
+
+
+    <ImageButton
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:id="@+id/bth_autonomous"
+            android:background="@drawable/autonomous_icon"
+            android:layout_below="@+id/txt_autonomous" android:layout_alignEnd="@+id/txt_autonomous"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/bth_autonomous"
+            android:id="@+id/txt_autonomous"
+            android:textColor="#F5F5F5"
+            android:layout_marginEnd="71dp"
+            android:layout_alignParentTop="true" android:layout_alignParentEnd="true" android:layout_marginTop="40dp"/>
+
+    <ImageButton
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:id="@+id/bth_manual_control"
+            android:background="@drawable/manual_icon"
+            android:layout_below="@+id/txt_manual_control" android:layout_toStartOf="@+id/txt_autonomous"
+            android:layout_marginEnd="48dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/bth_manual_control"
+            android:textColor="#F5F5F5"
+            android:id="@+id/txt_manual_control"
+            android:layout_alignTop="@+id/bth_autonomous" android:layout_alignEnd="@+id/bth_manual_control"/>
+
+    <ImageButton
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:id="@+id/bth_settings"
+            android:background="@drawable/settings_icon"
+            android:layout_alignBottom="@+id/txt_about" android:layout_toStartOf="@+id/txt_manual_control"
+            android:layout_marginEnd="24dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/bth_settings"
+            android:textColor="#F5F5F5"
+            android:id="@+id/txt_settings"
+            android:layout_above="@+id/bth_settings" android:layout_alignStart="@+id/bth_settings"/>
+
+
+    <ImageButton
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:id="@+id/bth_about"
+            android:background="@drawable/about_icon"
+            android:layout_alignParentBottom="true" android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="About"
+            android:textColor="#F5F5F5"
+            android:id="@+id/txt_about"
+            android:layout_above="@+id/bth_about" android:layout_alignParentStart="true"/>
+
+</RelativeLayout>

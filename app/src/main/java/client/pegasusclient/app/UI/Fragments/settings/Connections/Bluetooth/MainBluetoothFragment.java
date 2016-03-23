@@ -20,6 +20,8 @@ import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.BL.Util.PreferencesManager;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 
 public class MainBluetoothFragment extends Fragment {
@@ -41,6 +43,7 @@ public class MainBluetoothFragment extends Fragment {
     public static final int DISCOVERY_REQUEST = 2;
     public static final int REQUEST_CONNECT_DEVICE = 3;
 
+
     // Layout Views
     private View root;
     private TextView mBluetoothStatus;
@@ -49,14 +52,16 @@ public class MainBluetoothFragment extends Fragment {
     private TextView mRemoteDeviceName;
     private TextView mRemoteDeviceAddress;
     private TextView mRemoteDeviceSignal;
-    private ImageButton mRefresh;
-    private ImageButton mOtherDevices;
-    private ImageButton mStatusButton;
     private ProgressBar mLoading;
 
+    private BluetoothAdapter mBluetoothAdapter;
     private boolean isBluetoothEnabled;
     private boolean requestDiscoverable;
     private boolean isRegisteredToBroadcastReceiver;
+
+    private FloatingActionsMenu mActionButtonsMenu;
+    private FloatingActionButton mSearchingOtherDevices;
+    private FloatingActionButton mChangeBluetoothState;
 
     private ConnectionService mConnectionService;
     private boolean boundToConnectionService;
@@ -73,8 +78,10 @@ public class MainBluetoothFragment extends Fragment {
         super.onCreate(savedInstanceState);
         //A retained fragment is not destroyed during a configuration change and can be reconnected to an activity after the change
         setRetainInstance(true);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         createBinnedConnectionManagerService();
         mContext = getContext();
+
 
 
     }
@@ -96,16 +103,16 @@ public class MainBluetoothFragment extends Fragment {
             changeLayoutChildrenState(false);
         } else {
 
-            mRefresh = (ImageButton) root.findViewById(R.id.setting_connection_refresh_icon);
-            mOtherDevices = (ImageButton) root.findViewById(R.id.setting_connection_bt_discover_icon);
-            mStatusButton = (ImageButton) root.findViewById(R.id.setting_bluetooth_enable_bth);
+            mActionButtonsMenu = (FloatingActionsMenu)root.findViewById(R.id.bluetooth_settings_action_buttons_menu);
+            mSearchingOtherDevices = (FloatingActionButton)root.findViewById(R.id.fab_find_devices);
+            mChangeBluetoothState = (FloatingActionButton)root.findViewById(R.id.fab_change_status);
+
             mLocalDeviceName = (TextView) root.findViewById(R.id.setting_bluetooth_local_device_name_context);
             mLocalDeviceAddress = (TextView) root.findViewById(R.id.setting_bluetooth_local_device_address_context);
             mRemoteDeviceName = (TextView) root.findViewById(R.id.setting_bluetooth_remote_device_name_context);
             mRemoteDeviceAddress = (TextView) root.findViewById(R.id.setting_bluetooth_remote_device_address_context);
 
-            // If BT is not on, request that it be enabled.
-            isBluetoothEnabled = mConnectionService.getAdapter().isEnabled();
+            isBluetoothEnabled = mBluetoothAdapter.isEnabled();
             setDeviceState(isBluetoothEnabled);
 
             //If bluetooth is enabled and we are connected to the same one
@@ -115,7 +122,7 @@ public class MainBluetoothFragment extends Fragment {
             }
 
 
-            mOtherDevices.setOnClickListener(new View.OnClickListener() {
+            mSearchingOtherDevices.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     requestDiscoverable = true;
@@ -133,10 +140,10 @@ public class MainBluetoothFragment extends Fragment {
                 }
             });
 
-            mStatusButton.setOnClickListener(new View.OnClickListener() {
+            mChangeBluetoothState.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ensureBluetoothEnabled();
+                    changeBluetoothState((isBluetoothEnabled) = mBluetoothAdapter.isEnabled());
                 }
             });
 
@@ -204,7 +211,6 @@ public class MainBluetoothFragment extends Fragment {
         if (debugging)
             Log.e(TAG, "++ ON Destroy ++");
         requestDiscoverable = false;
-
     }
 
 
@@ -261,7 +267,6 @@ public class MainBluetoothFragment extends Fragment {
                 case BluetoothAdapter.STATE_TURNING_ON: {
                     showToastMessage(General.OnBluetoothIsTurningOn);
                     mBluetoothStatus.setText(getResources().getString(R.string.settings_value_disable));
-                    mOtherDevices.setEnabled(false);
                     break;
                 }
                 case BluetoothAdapter.STATE_ON: {
@@ -271,11 +276,23 @@ public class MainBluetoothFragment extends Fragment {
                 }
                 case BluetoothAdapter.STATE_OFF:
                     mBluetoothStatus.setText(getResources().getString(R.string.settings_value_disable));
-                    mOtherDevices.setEnabled(false);
                     break;
             }
         }
     };
+
+    /**
+     * Change Bluetooth State
+     */
+
+    private void changeBluetoothState(boolean currentStatus){
+        if(currentStatus){
+            mBluetoothAdapter.disable();
+        }else{
+            mBluetoothAdapter.enable();
+        }
+        setDeviceState(!currentStatus);
+    }
 
 
     /**
@@ -372,18 +389,11 @@ public class MainBluetoothFragment extends Fragment {
     private void setDeviceState(boolean isEnabled) {
         mLocalDeviceName.setText(mConnectionService.getAdapter().getName());
         mLocalDeviceAddress.setText(mConnectionService.getAdapter().getAddress());
-
         if (isEnabled) {
             mBluetoothStatus.setText(getResources().getString(R.string.settings_value_enable));
-            mStatusButton.setImageResource(R.drawable.bluetooth_enable_icon);
-            mStatusButton.setEnabled(false);
         } else {
             mBluetoothStatus.setText(getResources().getString(R.string.settings_value_disable));
-            mStatusButton.setImageResource(R.drawable.bluetooth_disable_icon);
-            mStatusButton.setEnabled(true);
         }
-        mOtherDevices.setEnabled(isEnabled);
-        mStatusButton.setVisibility(View.VISIBLE);
     }
 
     /**

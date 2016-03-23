@@ -50,4 +50,8 @@ dependencies {
     compile 'com.victor:lib:1.0.2'
     //Draggable Panel
     compile 'com.github.pedrovgs:draggablepanel:1.9'
+
+    //Picasso
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }
+
