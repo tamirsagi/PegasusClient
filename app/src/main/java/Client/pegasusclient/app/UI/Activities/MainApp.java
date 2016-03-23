@@ -92,6 +92,8 @@ public class MainApp extends AppCompatActivity {
         }
         if (mHotspotConnectivityService == null)
             createBinnedHotspotConnectivityServiceService();
+
+        mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice();
     }
 
     /**

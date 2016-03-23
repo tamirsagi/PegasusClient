@@ -14,14 +14,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
-import android.util.DisplayMetrics;
-import android.view.Display;
+import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import client.pegasusclient.app.BL.General;
 import client.pegasusclient.app.BL.Services.ConnectionService;
+import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.BL.Services.SteeringService;
 import client.pegasusclient.app.UI.Fragments.PegasusCamera;
 import client.pegasusclient.app.UI.Helper.SpeedometerGauge;
@@ -102,6 +102,9 @@ public class ManualControl extends AppCompatActivity {
     private ConnectionService mConnectionService;
     private SteeringService mSteeringService;
 
+    private HotspotConnectivityService mHotspotConnectivityService;
+    private boolean mIsBoundToHotSpotService;
+
     private boolean mIsConnectionManagerBinned;
     private boolean mIsSteeringServiceBinned;
 
@@ -151,9 +154,16 @@ public class ManualControl extends AppCompatActivity {
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                initializeDraggablePanel();
-                mDraggablePanel.setVisibility(View.VISIBLE);
-                mDraggablePanel.initializeView();
+                if(mHotspotConnectivityService != null){
+                    if(mHotspotConnectivityService.isConnectedToPegasusCamera()){
+                        initializeDraggablePanel();
+                        mDraggablePanel.setVisibility(View.VISIBLE);
+                        mDraggablePanel.initializeView();
+                    }else{
+                        Toast.makeText(ManualControl.this, "Please Connect To Pegasus AP", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
             }
         });
 
@@ -184,6 +194,11 @@ public class ManualControl extends AppCompatActivity {
             mIsSteeringServiceBinned = false;
 
         }
+
+        if(mIsBoundToHotSpotService){
+            unbindService(hotspotConnectivityService);
+            mIsBoundToHotSpotService = false;
+        }
     }
 
     @Override
@@ -208,6 +223,9 @@ public class ManualControl extends AppCompatActivity {
             } else if (!mIsSteeringServiceBinned) {
                 createBinnedSteeringService();
             }
+        }
+        if(!mIsBoundToHotSpotService){
+            createBinnedHotspotConnectivityServiceService();
         }
     }
 
@@ -317,6 +335,9 @@ public class ManualControl extends AppCompatActivity {
     };
 
 
+    /**
+     * Sttering Service Section
+     */
     private void createBinnedSteeringService() {
         mSteeringServiceIntent = new Intent(this, SteeringService.class);
         bindService(mSteeringServiceIntent, SteeringServiceConnection, Context.BIND_AUTO_CREATE);
@@ -341,6 +362,44 @@ public class ManualControl extends AppCompatActivity {
         }
     };
 
+
+
+    /**
+     * Bind to Hotspot Connection Manager Service
+     */
+    private void createBinnedHotspotConnectivityServiceService() {
+        Intent intent = new Intent(this, HotspotConnectivityService.class);
+        bindService(intent, hotspotConnectivityService, Context.BIND_AUTO_CREATE);
+        mIsBoundToHotSpotService = true;
+    }
+
+    /**
+     * Create the service instance
+     */
+    private ServiceConnection hotspotConnectivityService = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            HotspotConnectivityService.MyLocalBinder hotspotConnectivityService = (HotspotConnectivityService.MyLocalBinder) service;
+            mHotspotConnectivityService = hotspotConnectivityService.gerService();
+            try{
+                mHotspotConnectivityService.registerHandler(mMessagesHandler);
+                //   mHotspotConnectivityService.connectToPegasusAP();
+            }catch (Exception e){
+                Log.e(TAG,e.getMessage());
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            if (mIsBoundToHotSpotService) {
+                unbindService(hotspotConnectivityService);
+                mIsBoundToHotSpotService = false;
+            }
+        }
+    };
+
+
+
     /**
      * handle messages to fragments
      */
@@ -353,6 +412,9 @@ public class ManualControl extends AppCompatActivity {
                     int rotation = msg.getData().getInt(SteeringService.KEY_ROTATION);
                     if (mDirectionSet)
                         handleSteeringChanges(rotation, inclination);
+                    return true;
+                case HotspotConnectivityService.HOT_SPOT_SENDER:
+                    //Todo handle messages from service
                     return true;
                 default:
                     return false;

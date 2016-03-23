@@ -1,14 +1,10 @@
 package client.pegasusclient.app.UI.Fragments;
 
-import android.content.*;
-import android.media.MediaPlayer;
 import android.os.*;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.*;
 import android.webkit.WebView;
-import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.UI.Activities.R;
 
 
@@ -23,16 +19,8 @@ public class PegasusCamera extends Fragment{
     private static String PEGASUS_STREAMING_VIDEO_ADDRESS = "http:192.168.42.1:8090/?action=stream";
 
 
-    private HotspotConnectivityService mHotspotConnectivityService;
-
     private View mRoot;
-    private boolean mIsBoundToService;
-
-    private Handler mHandler;
-    private WebView mWebview;
-    private MediaPlayer mediaPlayer;
-    private SurfaceHolder vidHolder;
-    private SurfaceView vidSurface;
+    private WebView mWebView;
 
 
     @Override
@@ -54,8 +42,8 @@ public class PegasusCamera extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mRoot = inflater.inflate(R.layout.fragment_pegasus_camera, container, false);
         //initializeVideoView();
-        mWebview = (WebView) mRoot.findViewById(R.id.pegasus_camera);
-        mWebview.loadUrl(PEGASUS_STREAMING_VIDEO_ADDRESS);
+        mWebView = (WebView) mRoot.findViewById(R.id.pegasus_camera);
+        mWebView.loadUrl(PEGASUS_STREAMING_VIDEO_ADDRESS);
         return mRoot;
     }
 
@@ -70,40 +58,7 @@ public class PegasusCamera extends Fragment{
         super.onResume();
     }
 
-    /**
-     * Bind to Hotspot Connection Manager Service
-     */
-    private void createBinnedHotspotConnectivityServiceService() {
-        Intent intent = new Intent(getActivity(), HotspotConnectivityService.class);
-        getActivity().getApplicationContext().bindService(intent, hotspotConnectivityService, Context.BIND_AUTO_CREATE);
-        mIsBoundToService = true;
-    }
 
-    /**
-     * Create the service instance
-     */
-    private ServiceConnection hotspotConnectivityService = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            HotspotConnectivityService.MyLocalBinder hotspotConnectivityService = (HotspotConnectivityService.MyLocalBinder) service;
-            mHotspotConnectivityService = hotspotConnectivityService.gerService();
-            try{
-                mHotspotConnectivityService.registerHandler(mHandler);
-                //connect to AP
-             //   mHotspotConnectivityService.connectToPegasusAP();
-            }catch (Exception e){
-                Log.e(TAG,e.getMessage());
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            if (mIsBoundToService) {
-                getActivity().getApplicationContext().unbindService(hotspotConnectivityService);
-                mIsBoundToService = false;
-            }
-        }
-    };
 
 
 

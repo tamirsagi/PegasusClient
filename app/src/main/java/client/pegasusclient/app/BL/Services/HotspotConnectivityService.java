@@ -5,7 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.widget.Toast;
@@ -16,7 +19,9 @@ import android.widget.Toast;
  *         both rotation and inclination
  */
 public class HotspotConnectivityService extends Service {
-    private static final String TAG = "HotspotConnectivityService";
+    private static final String TAG = "Hotspot Connectivity Service";
+    public static final int HOT_SPOT_SENDER = 2;
+
     private static String WIFI_STATE_CHANGED = "android.net.wifi.STATE_CHANGE";
     private static String CONNECTION_STATE_CHANGED = "android.net.conn.CONNECTIVITY_CHANGE";
 
@@ -24,6 +29,7 @@ public class HotspotConnectivityService extends Service {
     private static final String mPegasusHotspotPass = "Pp123456";
     private static final int PEGASUS_AP_PRIORITY = 40;
 
+    private ConnectivityManager mConnectivityManager;
     private WifiConfiguration mPegasusHotspotConfiguration;
     private WifiManager mWifiManager;
     private EHotSpotStatus mEHotSpotStatus = EHotSpotStatus.DEFAULT;
@@ -50,6 +56,7 @@ public class HotspotConnectivityService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         setHotSpotStatus(EHotSpotStatus.DISCONNECTED);
+        mConnectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         initializeWifiConfiguration();
         registerToBroadcast();
         return HotspotConnectivityService;
@@ -114,10 +121,10 @@ public class HotspotConnectivityService extends Service {
                 setHotSpotStatus(EHotSpotStatus.CONNECTED);
                 return true;
             }
+        }
+        setHotSpotStatus(EHotSpotStatus.DISCONNECTED);
+        throw new Exception("wifi manager is null");
     }
-    setHotSpotStatus(EHotSpotStatus.DISCONNECTED);
-    throw new  Exception("wifi manager is null");
-}
 
     /**
      * disconnect from any wifi
@@ -175,6 +182,24 @@ public class HotspotConnectivityService extends Service {
             }
         }
     };
+
+
+    /**
+     * @return true if connected to Pegasus AP else false
+     */
+    public boolean isConnectedToPegasusCamera() {
+        if (mWifiManager == null)
+            return false;
+
+        final WifiInfo connectionInfo = mWifiManager.getConnectionInfo();
+        if (connectionInfo != null && connectionInfo.getSSID().equals(mPegasusHotspotSSID)) {
+            setHotSpotStatus(EHotSpotStatus.CONNECTED);
+            return true;
+        }
+        return false;
+    }
+
+
 
 public class MyLocalBinder extends Binder {
 
