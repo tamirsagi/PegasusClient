@@ -35,14 +35,6 @@ public class PegasusCamera extends Fragment{
     private SurfaceView vidSurface;
 
 
-    public static PegasusCamera getInstance(){
-        if(mInstance == null)
-            mInstance = new PegasusCamera();
-        return mInstance;
-    }
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

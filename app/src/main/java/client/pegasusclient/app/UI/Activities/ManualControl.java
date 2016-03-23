@@ -1,8 +1,10 @@
 package client.pegasusclient.app.UI.Activities;
 
+import android.app.AlertDialog;
 import android.content.*;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,7 +13,11 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ContextThemeWrapper;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import client.pegasusclient.app.BL.General;
@@ -88,8 +94,6 @@ public class ManualControl extends AppCompatActivity {
 
     private final String degreeSymbol = "\u00b0";
 
-
-    private View mRoot;
     private RadioGroup mDrivingDirectionRadioGroup;
 
     ////////////////// SERVICES \\\\\\\\\\\\\\\\\\\\\\\\
@@ -131,23 +135,19 @@ public class ManualControl extends AppCompatActivity {
         Typeface mLedFont = Typeface.createFromAsset(getAssets(),
                 "fonts/digital-7/digital-7_mono.ttf");
 
-        mSpeed = (TextView) mRoot.findViewById(R.id.manual_control_speed);
+        mSpeed = (TextView) findViewById(R.id.manual_control_speed);
         mSpeed.setTypeface(mLedFont);
 
-        mRotation = (TextView) mRoot.findViewById(R.id.manual_control_rotation);
+        mRotation = (TextView) findViewById(R.id.manual_control_rotation);
         mRotation.setTypeface(mLedFont);
 
-        mTotalDistance = (TextView) mRoot.findViewById(R.id.manual_control_distance);
+        mTotalDistance = (TextView) findViewById(R.id.manual_control_distance);
         mTotalDistance.setTypeface(mLedFont);
 
-        mDrivingDirection = (TextView) mRoot.findViewById(R.id.manual_control_driving_direction);
+        mDrivingDirection = (TextView) findViewById(R.id.manual_control_driving_direction);
         mDrivingDirection.setTypeface(mLedFont);
 
-        mDraggablePanel = (DraggablePanel)mRoot.findViewById(R.id.manual_control_draggable_panel);
-        mDraggablePanel.setClickToMaximizeEnabled(true);
-        mDraggablePanel.setClickToMinimizeEnabled(true);
-
-        mFloatingActionButton = (FloatingActionButton)mRoot.findViewById(R.id.fab_camera);
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab_camera);
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,6 +157,7 @@ public class ManualControl extends AppCompatActivity {
             }
         });
 
+
         setRadioGroup();
         SetSpeedometer();
     }
@@ -165,25 +166,23 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-
+        stopService(mSteeringServiceIntent);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
         if (mIsConnectionManagerBinned) {
-            getApplicationContext().unbindService(BluetoothServiceConnection);
+            unbindService(BluetoothServiceConnection);
             mIsConnectionManagerBinned = false;
         }
 
         if (mIsSteeringServiceBinned) {
             mSteeringService.unregisterListener();
             mSteeringService.unregisterHandler(TAG);
-            getApplicationContext().unbindService(SteeringServiceConnection);
+            unbindService(SteeringServiceConnection);
             mIsSteeringServiceBinned = false;
-            getApplicationContext().stopService(mSteeringServiceIntent);
+
         }
     }
 
@@ -200,11 +199,16 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-
-        if (!mIsConnectionManagerBinned)
+        if (!mIsConnectionManagerBinned) {
             createBinnedConnectionManagerService();
-        if (!mIsSteeringServiceBinned)
-            createBinnedSteeringService();
+        }
+        if (mConnectionService != null) {
+            if (!mConnectionService.isConnectedToRemoteDevice()) {
+                showAlertDialog();
+            } else if (!mIsSteeringServiceBinned) {
+                createBinnedSteeringService();
+            }
+        }
     }
 
 
@@ -212,7 +216,7 @@ public class ManualControl extends AppCompatActivity {
      * set Radio Button Group
      */
     private void setRadioGroup() {
-        mDrivingDirectionRadioGroup = (RadioGroup) mRoot.findViewById(R.id.manual_control_driving_direction_radio_group);
+        mDrivingDirectionRadioGroup = (RadioGroup) findViewById(R.id.manual_control_driving_direction_radio_group);
         mDrivingDirectionRadioGroup.clearCheck();
         mDrivingDirectionRadioGroup.check(R.id.manual_control_direction_forward);       //check Forward as Default
         mDirectionSet = true;
@@ -244,7 +248,7 @@ public class ManualControl extends AppCompatActivity {
      * Settings for speedometer gauge
      */
     private void SetSpeedometer() {
-        mSpeedometerGauge = (SpeedometerGauge) mRoot.findViewById(R.id.speedometer);
+        mSpeedometerGauge = (SpeedometerGauge) findViewById(R.id.speedometer);
         mSpeedometerGauge.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
             public String getLabelFor(double progress, double maxProgress) {
@@ -260,14 +264,24 @@ public class ManualControl extends AppCompatActivity {
 
     /**
      * set Draggable panel
+     *
      * @throws Resources.NotFoundException
      */
     private void initializeDraggablePanel() throws Resources.NotFoundException {
-        mDraggablePanel.setVisibility(View.GONE);
+        mDraggablePanel = null;
+        mDraggablePanel = (DraggablePanel) findViewById(R.id.manual_control_draggable_panel);
+        mDraggablePanel.setClickToMaximizeEnabled(true);
+        mDraggablePanel.setClickToMinimizeEnabled(true);
         mDraggablePanel.setFragmentManager(getSupportFragmentManager());
-        mDraggablePanel.setTopFragment(PegasusCamera.getInstance());
+        mDraggablePanel.setTopFragment(new PegasusCamera());
         mDraggablePanel.setBottomFragment(new Fragment());
+        Point displaySize = new Point();
+        getWindowManager().getDefaultDisplay().getRealSize(displaySize);
+        mDraggablePanel.setTopViewHeight(displaySize.y);
+        mDraggablePanel.setVisibility(View.GONE);
     }
+
+
 
     /**
      *            #####  Services ######
@@ -278,8 +292,8 @@ public class ManualControl extends AppCompatActivity {
      * to Bluetooth Connection Manager Service
      */
     private void createBinnedConnectionManagerService() {
-        mConnectionManagerServiceIntent = new Intent(this, ConnectionService.class);
-        getApplicationContext().bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+        mConnectionManagerServiceIntent = new Intent(ManualControl.this, ConnectionService.class);
+        bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
         mIsConnectionManagerBinned = true;
     }
 
@@ -296,7 +310,7 @@ public class ManualControl extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             if (mIsConnectionManagerBinned) {
-                getApplicationContext().unbindService(BluetoothServiceConnection);
+                getApplication().unbindService(BluetoothServiceConnection);
                 mIsConnectionManagerBinned = false;
             }
         }
@@ -305,10 +319,8 @@ public class ManualControl extends AppCompatActivity {
 
     private void createBinnedSteeringService() {
         mSteeringServiceIntent = new Intent(this, SteeringService.class);
-        getApplicationContext().bindService(mSteeringServiceIntent, SteeringServiceConnection, Context.BIND_AUTO_CREATE);
-        getApplicationContext().startService(mSteeringServiceIntent);
-        mIsSteeringServiceBinned = true;
-
+        bindService(mSteeringServiceIntent, SteeringServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(mSteeringServiceIntent);
     }
 
     private ServiceConnection SteeringServiceConnection = new ServiceConnection() {
@@ -319,12 +331,13 @@ public class ManualControl extends AppCompatActivity {
             //register the Handler into the service to handle incoming messages
             mSteeringService.registerHandler(TAG, mMessagesHandler);
             mSteeringService.registerListener();
+            mIsSteeringServiceBinned = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
-
+            unbindService(SteeringServiceConnection);
+            mIsSteeringServiceBinned = false;
         }
     };
 
@@ -497,6 +510,26 @@ public class ManualControl extends AppCompatActivity {
         } catch (JSONException e) {
 
         }
+    }
+
+    /**
+     * show alert message when client is not connected to vehicle and  needs to re-direct to settings
+     */
+    private void showAlertDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, android.R.style.Theme_Dialog));
+        builder.setTitle("Connect To Vehicle");
+        builder.setMessage("You are not connected to Pegasus Vehicle, please connect");
+        builder.setIcon(R.drawable.bluetooth_disable_icon);
+        final Intent MainPegasusClientIntent = new Intent(this, PegasusSettings.class);
+        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                startActivity(MainPegasusClientIntent);
+            }
+        });
+        AlertDialog alertdialog = builder.create();
+        alertdialog.show();
     }
 
 
