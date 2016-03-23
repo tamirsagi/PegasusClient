@@ -10,7 +10,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16dp"
-            android:textColor="#000"
+            android:textColor="#F5F5F5"
             android:text="@string/bluetooth_device_name">
 
     </TextView>
@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:textSize="16dp"
             android:text="@string/bluetooth_device_address"
-            android:textColor="#000"
+            android:textColor="#F5F5F5"
             android:layout_alignParentTop="true" android:layout_centerHorizontal="true">
 
     </TextView>
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:textSize="16dp"
             android:text="@string/bluetooth_device_signal"
-            android:textColor="#000"
+            android:textColor="#F5F5F5"
             android:layout_alignParentTop="true" android:layout_alignParentEnd="true">
 
     </TextView>
