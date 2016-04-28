@@ -16,7 +16,7 @@ public class PegasusCamera extends Fragment{
 
     private static PegasusCamera mInstance;
     private static final String TAG = "PegasusCamera";
-    private static String PEGASUS_STREAMING_VIDEO_ADDRESS = "http:192.168.42.1:8090/?action=stream";
+    private static String PEGASUS_STREAMING_VIDEO_ADDRESS = "http://192.168.42.1:8090/?action=stream";
 
 
     private View mRoot;

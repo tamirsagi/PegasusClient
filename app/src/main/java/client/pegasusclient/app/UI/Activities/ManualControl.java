@@ -72,7 +72,7 @@ public class ManualControl extends AppCompatActivity {
     private static final int STRAIGHT_STEERING_ANGLE = 90;
 
     private static final int MIN_ANGLE_DELTA_TO_SEND = 10;                 //Min angle delta to change
-    private static final int MIN_DIGITAL_SPEED_DELTA_TO_SEND = 5;          //Min angle delta to change
+    private static final int MIN_DIGITAL_SPEED_DELTA_TO_SEND = 25;          //Min angle delta to change
 
     private static final String STEERING_RIGHT = "R";
     private static final String STEERING_LEFT = "L";
