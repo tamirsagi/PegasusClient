@@ -15,10 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import client.pegasusclient.app.BL.Bluetooth.BluetoothDeviceInfo;
+import client.pegasusclient.app.BL.Bluetooth.constants.BluetoothMessages;
 import client.pegasusclient.app.BL.Services.ConnectionService;
-import client.pegasusclient.app.BL.General;
+import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.BL.Util.PreferencesManager;
-import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -265,7 +265,7 @@ public class MainBluetoothFragment extends Fragment {
             int state = intent.getIntExtra(currentState, NONE);
             switch (state) {
                 case BluetoothAdapter.STATE_TURNING_ON: {
-                    showToastMessage(General.OnBluetoothIsTurningOn);
+                    showToastMessage(BluetoothMessages.OnBluetoothIsTurningOn);
                     mBluetoothStatus.setText(getResources().getString(R.string.settings_value_disable));
                     break;
                 }

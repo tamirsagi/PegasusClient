@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/autonomous_background">
+
+
+    <TextView
+            android:id="@+id/fab_auto_drive"
+            android:layout_width="90sp"
+            android:layout_height="90sp"
+            android:background="@drawable/auto_drive_icon"
+            android:elevation="8dp"
+            android:layout_marginStart="59dp"
+            android:layout_alignParentTop="true" android:layout_alignParentStart="true"
+            android:layout_marginTop="71dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#000000"
+            android:textSize="25sp"
+            android:text="Auto Drive"
+            android:id="@+id/txt_auto_drive"
+            android:layout_marginStart="34dp"
+            android:layout_alignTop="@+id/fab_auto_drive"
+            android:layout_toEndOf="@+id/fab_auto_drive"
+            android:layout_marginTop="29dp"/>"/>
+
+    <TextView
+            android:id="@+id/fab_find_parking"
+            android:layout_width="90sp"
+            android:layout_height="90sp"
+            android:background="@drawable/find_parking_icon"
+            android:elevation="8dp"
+            android:layout_marginBottom="37dp"
+            android:layout_alignParentBottom="true" android:layout_toStartOf="@+id/txt_auto_drive"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#000000"
+            android:textSize="25sp"
+            android:text="Find Parking"
+            android:id="@+id/txt_find_parking"
+            android:layout_marginBottom="25dp"
+            android:layout_alignBottom="@+id/fab_find_parking" android:layout_alignStart="@+id/txt_auto_drive"/>
+
+</RelativeLayout>

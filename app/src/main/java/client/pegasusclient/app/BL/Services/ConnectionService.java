@@ -15,8 +15,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import client.pegasusclient.app.BL.Bluetooth.constants.BluetoothMessages;
 import client.pegasusclient.app.BL.Enums.EBluetoothStates;
-import client.pegasusclient.app.BL.General;
+import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.BL.Interfaces.IBluetoothSocketWrapper;
 import client.pegasusclient.app.BL.Bluetooth.NativeBluetoothSocket;
 import client.pegasusclient.app.BL.Interfaces.onMessageReceivedListener;
@@ -322,7 +323,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
             try {
                 bluetoothSocket.getOutputStream().println(msg);
             } catch (Exception e) {
-                Log.e(TAG, General.OnWriteToSocketFailed, e);
+                Log.e(TAG, BluetoothMessages.OnWriteToSocketFailed, e);
             }
         }
 
@@ -334,7 +335,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
                 if (isConnected())
                     bluetoothSocket.close();
             } catch (IOException e) {
-                Log.e(TAG, General.OnCloseSocketFailed, e);
+                Log.e(TAG, BluetoothMessages.OnCloseSocketFailed, e);
             }
         }
 

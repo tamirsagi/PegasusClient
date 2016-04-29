@@ -1,6 +1,5 @@
-package client.pegasusclient.app.UI.Activities;
+package client.pegasusclient.app.UI.manual.activities;
 
-import android.app.AlertDialog;
 import android.content.*;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -14,18 +13,20 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import client.pegasusclient.app.BL.General;
+import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.BL.Services.SteeringService;
+import client.pegasusclient.app.UI.Activities.R;
 import client.pegasusclient.app.UI.Fragments.PegasusCamera;
+import client.pegasusclient.app.UI.Helper.MyAlerts;
 import client.pegasusclient.app.UI.Helper.SpeedometerGauge;
+import client.pegasusclient.app.UI.manual.constants.ActionKeys;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.github.pedrovgs.DraggablePanel;
 import org.json.JSONException;
@@ -74,15 +75,6 @@ public class ManualControl extends AppCompatActivity {
     private static final int MIN_ANGLE_DELTA_TO_SEND = 10;                 //Min angle delta to change
     private static final int MIN_DIGITAL_SPEED_DELTA_TO_SEND = 25;          //Min angle delta to change
 
-    private static final String STEERING_RIGHT = "R";
-    private static final String STEERING_LEFT = "L";
-    private static final String STEERING_NONE = "N";
-
-    private static final String KEY_DIGITAL_SPEED = "DS";                  //DS = Digital Speed
-    private static final String KEY_ROTATION_ANGLE = "RA";                //RA = Rotation Angle
-    private static final String KEY_STEERING_DIRECTION = "SD";          //Steer Direction either Right or Left
-
-    private static final String KEY_DRIVING_DIRECTION = "DD";          //Steer Direction either Right or Left
 
     ///////////////////////////////// Speedometer Consts \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -219,7 +211,7 @@ public class ManualControl extends AppCompatActivity {
         }
         if (mConnectionService != null) {
             if (!mConnectionService.isConnectedToRemoteDevice()) {
-                showAlertDialog();
+                MyAlerts.showAlertDialog(getApplicationContext());
             } else if (!mIsSteeringServiceBinned) {
                 createBinnedSteeringService();
             }
@@ -313,6 +305,18 @@ public class ManualControl extends AppCompatActivity {
         mConnectionManagerServiceIntent = new Intent(ManualControl.this, ConnectionService.class);
         bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
         mIsConnectionManagerBinned = true;
+        if (mConnectionService != null) {
+            if (!mConnectionService.isConnectedToRemoteDevice()) {
+                MyAlerts.showAlertDialog(getApplicationContext());
+            }else{
+                try {
+                    JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
+                    mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+                } catch (JSONException e) {
+                    Log.e(TAG,e.getMessage());
+                }
+            }
+        }
     }
 
     /**
@@ -457,7 +461,7 @@ public class ManualControl extends AppCompatActivity {
                 && rotation != mLastSteeringAngle) {
             mLastSteeringAngle = rotation;
             String steerDirection = getSteeringDirection(mLastSteeringAngle);
-            if (!steerDirection.equals(STEERING_NONE))     //if it's R or L
+            if (!steerDirection.equals(ActionKeys.STEERING_NONE))     //if it's R or L
                 sendSteeringAngleToServer(steerDirection, mLastSteeringAngle);
         }
 
@@ -497,12 +501,11 @@ public class ManualControl extends AppCompatActivity {
 
         JSONObject messageToServer = new JSONObject();
         try {
-            messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
-            messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.CHANGE_DIRECTION.toString());
-            messageToServer.put(KEY_DRIVING_DIRECTION, drivingDirection.toString());
+            messageToServer.put(MessageKeys.KEY_MESSAGE_TYPE, MessageKeys.MESSAGE_TYPE_ACTION);
+            messageToServer.put(MessageKeys.KEY_VEHICLE_ACTION_TYPE, MessageKeys.MESSAGE_TYPE_ACTION_CHANGE_DIRECTION);
+            messageToServer.put(ActionKeys.KEY_DRIVING_DIRECTION, drivingDirection.toString());
             if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
+                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
@@ -518,10 +521,10 @@ public class ManualControl extends AppCompatActivity {
      */
     private String getSteeringDirection(int rotation) {
         if (0 <= rotation && rotation <= STRAIGHT_STEERING_ANGLE)
-            return STEERING_RIGHT;       //right when angle is 0-90 degrees
+            return ActionKeys.STEERING_RIGHT;       //right when angle is 0-90 degrees
         else if (STRAIGHT_STEERING_ANGLE < rotation && rotation <= 2 * MAX_STEERING_ANGLE)
-            return STEERING_LEFT;       //Left when angle is 90-180 degrees
-        return STEERING_NONE;
+            return ActionKeys.STEERING_LEFT;       //Left when angle is 90-180 degrees
+        return ActionKeys.STEERING_NONE;
     }
 
     /**
@@ -532,12 +535,11 @@ public class ManualControl extends AppCompatActivity {
     private void sendDigitalSpeedToServer(int digitalSpeed) {
         JSONObject messageToServer = new JSONObject();
         try {
-            messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
-            messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.CHANGE_SPEED.toString());
-            messageToServer.put(KEY_DIGITAL_SPEED, digitalSpeed);
+            messageToServer.put(MessageKeys.KEY_MESSAGE_TYPE, MessageKeys.MESSAGE_TYPE_ACTION);
+            messageToServer.put(MessageKeys.KEY_VEHICLE_ACTION_TYPE, MessageKeys.MESSAGE_TYPE_ACTION_CHANGE_SPEED);
+            messageToServer.put(ActionKeys.KEY_DIGITAL_SPEED, digitalSpeed);
             if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
+                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
@@ -552,47 +554,28 @@ public class ManualControl extends AppCompatActivity {
     private void sendSteeringAngleToServer(String steerDirection, double rotation) {
         JSONObject messageToServer = new JSONObject();
         try {
-            messageToServer.put(General.KEY_MESSAGE_TYPE, General.MessageType.ACTION.toString());
-            messageToServer.put(General.MessageType.ACTION.toString(), General.Action_Type.VEHICLE_ACTION.toString());
-            messageToServer.put(General.Action_Type.VEHICLE_ACTION.toString(), General.Vehicle_Actions.STEERING.toString());
+            messageToServer.put(MessageKeys.KEY_MESSAGE_TYPE, MessageKeys.MESSAGE_TYPE_ACTION);
+            messageToServer.put(MessageKeys.KEY_VEHICLE_ACTION_TYPE, MessageKeys.MESSAGE_TYPE_ACTION_STEERING);
             if (rotation < MIN_STEERING_ANGLE)
                 rotation = MIN_STEERING_ANGLE;
             else if (rotation > MAX_STEERING_ANGLE)
                 rotation = MAX_STEERING_ANGLE;
-            messageToServer.put(KEY_STEERING_DIRECTION, steerDirection);
+            messageToServer.put(ActionKeys.KEY_STEERING_DIRECTION, steerDirection);
 
             // convert the rotation angle to 0-40
-            if (steerDirection.equals(STEERING_RIGHT))
+            if (steerDirection.equals(ActionKeys.STEERING_RIGHT))
                 rotation = STRAIGHT_STEERING_ANGLE - rotation;
             else
                 rotation -= STRAIGHT_STEERING_ANGLE;
-            messageToServer.put(KEY_ROTATION_ANGLE, rotation);
+            messageToServer.put(ActionKeys.KEY_ROTATION_ANGLE, rotation);
             if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(General.getProtocolMessage(messageToServer.toString()));
+                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
     }
 
-    /**
-     * show alert message when client is not connected to vehicle and  needs to re-direct to settings
-     */
-    private void showAlertDialog() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, android.R.style.Theme_Dialog));
-        builder.setTitle("Connect To Vehicle");
-        builder.setMessage("You are not connected to Pegasus Vehicle, please connect");
-        builder.setIcon(R.drawable.bluetooth_disable_icon);
-        final Intent MainPegasusClientIntent = new Intent(this, PegasusSettings.class);
-        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                startActivity(MainPegasusClientIntent);
-            }
-        });
-        AlertDialog alertdialog = builder.create();
-        alertdialog.show();
-    }
+
 
 
 }

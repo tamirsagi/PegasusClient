@@ -52,6 +52,6 @@ dependencies {
     compile 'com.github.pedrovgs:draggablepanel:1.9'
 
     //Picasso
-    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.skyfishjy.ripplebackground:library:1.0.1'
 }
 

@@ -12,6 +12,8 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
+import client.pegasusclient.app.UI.autonomous.activities.Autonomous;
+import client.pegasusclient.app.UI.manual.activities.ManualControl;
 
 public class MainApp extends AppCompatActivity {
 
@@ -137,9 +139,9 @@ public class MainApp extends AppCompatActivity {
      * @param view
      */
     public void onButtonAutonomousClicked(View view) {
-        if (mConnectionService != null && (mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice())) {
-
-
+        if (mConnectionService != null && (mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice()) || true) {
+            Intent autonomous_intent = new Intent(this, Autonomous.class);
+            startActivity(autonomous_intent);
         }else{
             Toast.makeText(getApplicationContext(), "Please Connect To Pegasus Vehicle First", Toast.LENGTH_LONG).show();
         }

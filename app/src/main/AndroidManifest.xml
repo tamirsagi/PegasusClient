@@ -33,9 +33,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ManualControl"
+            android:name="client.pegasusclient.app.UI.manual.activities.ManualControl"
             android:label="pegasus"
             android:screenOrientation="landscape" >
+        </activity>
+
+        <activity
+                android:name="client.pegasusclient.app.UI.autonomous.activities.Autonomous"
+                android:label="pegasus"
+                android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".PegasusSettings"
