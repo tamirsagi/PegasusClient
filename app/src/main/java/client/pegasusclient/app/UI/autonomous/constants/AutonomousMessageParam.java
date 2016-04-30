@@ -13,6 +13,11 @@ public class AutonomousMessageParam {
     public static final String JSON_KEY_DISTANCE = "distance";
     public static final String JSON_KEY_SPEED = "speed";
 
+    public static final String JSON_KEY_PARKING_TYPE = "parking_type";
+    public static final int PARKING_TYPE_PARALLEL_RIGHT = 0;
+    public static final int PARKING_TYPE_PARALLEL_LEFT = 1;
+    public static final int PARKING_TYPE_ANGULAR_RIGHT = 2;
+    public static final int PARKING_TYPE_ANGULAR_LEFT = 3;
 
 
 }

@@ -10,6 +10,7 @@ import android.widget.ImageButton;
 import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
+import client.pegasusclient.app.UI.autonomous.constants.AutonomousMessageParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -109,6 +110,7 @@ public class Autonomous extends AppCompatActivity {
                 try {
                     if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
                         msg = MessageKeys.getAutonomousModeMessage(MessageKeys.AUTONOMOUS_MODE_FIND_PARKING);
+                        msg.put(AutonomousMessageParam.JSON_KEY_PARKING_TYPE,AutonomousMessageParam.PARKING_TYPE_PARALLEL_RIGHT);
                         MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
                         final Intent findParking = new Intent(v.getContext(), VehicleMode.class);
                         Bundle bundle = new Bundle();
