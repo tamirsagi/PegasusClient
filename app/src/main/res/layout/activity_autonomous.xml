@@ -6,7 +6,7 @@
                 android:background="@drawable/autonomous_background">
 
 
-    <TextView
+    <ImageButton
             android:id="@+id/fab_auto_drive"
             android:layout_width="90sp"
             android:layout_height="90sp"
@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#000000"
+            android:textColor="#D50000"
             android:textSize="25sp"
             android:text="Auto Drive"
             android:id="@+id/txt_auto_drive"
@@ -28,7 +28,7 @@
             android:layout_toEndOf="@+id/fab_auto_drive"
             android:layout_marginTop="29dp"/>"/>
 
-    <TextView
+    <ImageButton
             android:id="@+id/fab_find_parking"
             android:layout_width="90sp"
             android:layout_height="90sp"
@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#000000"
+            android:textColor="#D50000"
             android:textSize="25sp"
             android:text="Find Parking"
             android:id="@+id/txt_find_parking"

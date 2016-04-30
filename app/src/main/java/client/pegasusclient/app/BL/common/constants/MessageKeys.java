@@ -34,10 +34,12 @@ public class MessageKeys {
     public static final int  VEHICLE_MODE_AUTONOMOUS = 0;
     public static final int  VEHICLE_MODE_MANUAL = 1;
 
+    public static final String KEY_AUTONOMOUS_MODE = "AM";
+    public static final int  AUTONOMOUS_MODE_AUTO_DRIVE = 0;
+    public static final int  AUTONOMOUS_MODE_FIND_PARKING = 1;
 
-    public static final int RECEIVED_SERVER = 0;
-    public static final int RECEIVED_INFO = 1;
-
+    public static final String KEY_RECEIVED_MESSAGE_TYPE_LOG = "log";
+    public static final String KEY_RECEIVED_MESSAGE_TYPE_REAL_TIME_DATA = "rtd";
 
     /**
      * Method add $ and # according to the protocol before and after the message
@@ -57,7 +59,15 @@ public class MessageKeys {
         vehicleMode.put(KEY_MESSAGE_TYPE_SETTINGS,KEY_VEHICLE_MODE);
         vehicleMode.put(KEY_VEHICLE_MODE,aMode);
         return vehicleMode;
+    }
 
+
+    public static JSONObject getAutonomousModeMessage(int aAutonomousMode) throws JSONException {
+        JSONObject autonomousMode = new JSONObject();
+        autonomousMode.put(KEY_MESSAGE_TYPE,MESSAGE_TYPE_SETTINGS);
+        autonomousMode.put(KEY_MESSAGE_TYPE_SETTINGS,KEY_AUTONOMOUS_MODE);
+        autonomousMode.put(KEY_AUTONOMOUS_MODE,aAutonomousMode);
+        return autonomousMode;
     }
 
 

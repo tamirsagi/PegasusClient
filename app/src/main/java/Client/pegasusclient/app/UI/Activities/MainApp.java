@@ -23,7 +23,7 @@ public class MainApp extends AppCompatActivity {
     private ImageButton mBthAutonomous;
 
     // Bluetooth connection Service
-    private ConnectionService mConnectionService;
+    public static ConnectionService CONNECTION_SERVICE;
     private boolean mHasBTServiceStarted;
     private boolean mIsConnectedToPegasus;
 
@@ -89,13 +89,13 @@ public class MainApp extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mConnectionService == null) {
+        if (CONNECTION_SERVICE == null) {
             createBinnedConnectionManagerService();
         }
         if (mHotspotConnectivityService == null)
             createBinnedHotspotConnectivityServiceService();
 
-        mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice();
+        mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice();
     }
 
     /**
@@ -124,7 +124,7 @@ public class MainApp extends AppCompatActivity {
      * @param view
      */
     public void onButtonManualClicked(View view) {
-        if (mConnectionService != null && (mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice())) {
+        if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
             Intent manualControl = new Intent(this, ManualControl.class);
             startActivity(manualControl);
 
@@ -139,7 +139,7 @@ public class MainApp extends AppCompatActivity {
      * @param view
      */
     public void onButtonAutonomousClicked(View view) {
-        if (mConnectionService != null && (mIsConnectedToPegasus = mConnectionService.isConnectedToRemoteDevice()) || true) {
+        if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice()) || true) {
             Intent autonomous_intent = new Intent(this, Autonomous.class);
             startActivity(autonomous_intent);
         }else{
@@ -167,7 +167,7 @@ public class MainApp extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             ConnectionService.MyLocalBinder connectionManager = (ConnectionService.MyLocalBinder) service;
-            mConnectionService = connectionManager.gerService();
+            CONNECTION_SERVICE = connectionManager.gerService();
         }
 
         @Override
@@ -181,9 +181,9 @@ public class MainApp extends AppCompatActivity {
      * destroy bluetooth connection service
      */
     private void killBluetoothConnectionService() {
-        if (mConnectionService != null) {
-            mConnectionService.stopSelf();      //kill connection service
-            mConnectionService = null;
+        if (CONNECTION_SERVICE != null) {
+            CONNECTION_SERVICE.stopSelf();      //kill connection service
+            CONNECTION_SERVICE = null;
             mHasBTServiceStarted = false;
         }
     }

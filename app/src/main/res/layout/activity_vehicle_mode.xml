@@ -1,0 +1,104 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_marginLeft="0dp"
+              android:layout_marginRight="0dp"
+              android:baselineAligned="false"
+              android:divider="?android:attr/dividerHorizontal"
+              android:orientation="horizontal"
+              android:showDividers="middle">
+
+
+    <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="#616161"
+            android:layout_weight="2">
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="Current Speed:"
+                  android:textSize="16sp"
+                  android:textColor="#B71C1C"
+                  android:id="@+id/current_speed_title"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentTop="true"
+                  android:layout_centerHorizontal="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="0000"
+                  android:textSize="14sp"
+                  android:id="@+id/current_speed_value"
+                  android:layout_height="wrap_content"
+                  android:textColor="#B2DFDB"
+                  android:layout_below="@+id/current_speed_title"
+                  android:layout_centerHorizontal="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="Vehicle Mode:"
+                  android:textSize="16sp"
+                  android:textColor="#B71C1C"
+                  android:id="@+id/autonomous_mode_title"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentTop="true"
+                  android:layout_alignParentStart="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="Auto Drive"
+                  android:textSize="14sp"
+                  android:id="@+id/autonomous_mode"
+                  android:layout_height="wrap_content"
+                  android:textColor="#B2DFDB"
+                  android:layout_below="@+id/autonomous_mode_title"
+                  android:layout_alignParentStart="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="Distance:"
+                  android:textSize="16sp"
+                  android:textColor="#B71C1C"
+                  android:id="@+id/autonomous_total_distance_title"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentTop="true" android:layout_alignParentEnd="true"
+                  android:layout_marginEnd="22dp"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:text="     000"
+                  android:textSize="14sp"
+                  android:textColor="#B2DFDB"
+                  android:id="@+id/autonomous_distance_value"
+                  android:layout_height="wrap_content"
+                  android:layout_below="@+id/autonomous_total_distance_title"
+                  android:layout_alignStart="@+id/autonomous_total_distance_title"/>
+        <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:id="@+id/autonomous_vehicle_logs"
+                android:background="#000"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"/>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1.25">
+
+        <fragment
+                android:id="@+id/live_camera"
+                android:name="client.pegasusclient.app.UI.Fragments.PegasusCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                tools:layout="@layout/fragment_pegasus_camera"/>
+
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

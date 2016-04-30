@@ -36,23 +36,6 @@ public class BluetoothDevicesRecyclerAdapter extends ArrayAdapter<BluetoothDevic
     }
 
 
-//    @Override
-//    public RecordHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-//        View itemView = inflater.inflate(R.layout.bluetooth_dialog_device_details, parent, false);
-//        return new RecordHolder(itemView);          //return custom item
-//    }
-//
-//    @Override
-//    public void onBindViewHolder(RecordHolder holder, int position) {
-//        if (meBluetoothDevicesInfo != null && meBluetoothDevicesInfo.size() > 0) {
-//            BluetoothDeviceInfo record = meBluetoothDevicesInfo.get(position);
-//            holder.tv_Name.setText(record.getName());
-//            holder.tv_Address.setText(record.getAddress());
-//            holder.tv_Signal.setText(record.getSignal());
-//        }
-//    }
-
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 

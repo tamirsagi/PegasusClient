@@ -2,17 +2,14 @@ package client.pegasusclient.app.UI.autonomous.activities;
 
 import android.content.*;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
-import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.common.constants.MessageKeys;
+import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
-import client.pegasusclient.app.UI.Helper.MyAlerts;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,16 +24,9 @@ public class Autonomous extends AppCompatActivity {
     public static final String TAG = Autonomous.class.getSimpleName();
 
 
-    ////////////////// SERVICES \\\\\\\\\\\\\\\\\\\\\\\\
-    private Intent mConnectionManagerServiceIntent;
-    private ConnectionService mConnectionService;
-
-    private boolean mIsConnectionManagerBinned;
-
-
     // UI
-    private TextView mAutoDrive;
-    private TextView mFindParking;
+    private ImageButton mAutoDrive;
+    private ImageButton mFindParking;
 
 
     @Override
@@ -56,21 +46,26 @@ public class Autonomous extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-        if (mIsConnectionManagerBinned) {
-            unbindService(BluetoothServiceConnection);
-            mIsConnectionManagerBinned = false;
-        }
+
 
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (!mIsConnectionManagerBinned) {
-            createBinnedConnectionManagerService();
+        if (MainApp.CONNECTION_SERVICE != null) {
+            if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
+                try {
+                    JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
+                    MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+                } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }
         }
-
     }
+
+
 
     @Override
     public void onStop() {
@@ -84,83 +79,52 @@ public class Autonomous extends AppCompatActivity {
     }
 
 
-    private void initialAutoDriveButton(){
-        mAutoDrive = (TextView)findViewById(R.id.fab_auto_drive);
+    private void initialAutoDriveButton() {
+        mAutoDrive = (ImageButton) findViewById(R.id.fab_auto_drive);
         mAutoDrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mConnectionService != null) {
-                    if (mConnectionService.isConnectedToRemoteDevice()) {
-
+                JSONObject msg = null;
+                try {
+                    if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
+                        msg = MessageKeys.getAutonomousModeMessage(MessageKeys.AUTONOMOUS_MODE_AUTO_DRIVE);
+                        MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+                        final Intent autoDrive = new Intent(v.getContext(), VehicleMode.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putInt(MessageKeys.KEY_AUTONOMOUS_MODE, MessageKeys.AUTONOMOUS_MODE_AUTO_DRIVE);
+                        autoDrive.putExtras(bundle);
+                        startActivity(autoDrive);
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
             }
         });
-
-
     }
 
-    private void initialFindParkingButton(){
-        mFindParking = (TextView)findViewById(R.id.fab_find_parking);
+    private void initialFindParkingButton() {
+        mFindParking = (ImageButton) findViewById(R.id.fab_find_parking);
         mFindParking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mConnectionService != null) {
-                    if (mConnectionService.isConnectedToRemoteDevice()) {
-
+                JSONObject msg = null;
+                try {
+                    if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
+                        msg = MessageKeys.getAutonomousModeMessage(MessageKeys.AUTONOMOUS_MODE_FIND_PARKING);
+                        MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+                        final Intent findParking = new Intent(v.getContext(), VehicleMode.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putInt(MessageKeys.KEY_AUTONOMOUS_MODE, MessageKeys.AUTONOMOUS_MODE_FIND_PARKING);
+                        findParking.putExtras(bundle);
+                        startActivity(findParking);
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         });
     }
-
-
-    /**
-     *            #####  Services ######
-     */
-
-
-    /**
-     * to Bluetooth Connection Manager Service
-     */
-    private void createBinnedConnectionManagerService() {
-        mConnectionManagerServiceIntent = new Intent(Autonomous.this, ConnectionService.class);
-        bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
-        mIsConnectionManagerBinned = true;
-    }
-
-    /**
-     * bind to service
-     */
-    private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            ConnectionService.MyLocalBinder connectionManager = (ConnectionService.MyLocalBinder) service;
-            mConnectionService = connectionManager.gerService();
-            if (mConnectionService != null) {
-                if (!mConnectionService.isConnectedToRemoteDevice()) {
-                    MyAlerts.showAlertDialog(getApplicationContext());
-                }else{
-                    try {
-                        JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
-                        mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
-                    } catch (JSONException e) {
-                       Log.e(TAG,e.getMessage());
-                    }
-                }
-            }
-
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            if (mIsConnectionManagerBinned) {
-                getApplication().unbindService(BluetoothServiceConnection);
-                mIsConnectionManagerBinned = false;
-            }
-        }
-    };
-
 
 
 }

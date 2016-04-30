@@ -41,7 +41,7 @@ public class ConnectionService extends Service implements onMessageReceivedListe
     // Member fields
     private BluetoothAdapter mAdapter;            //device bluetooth adapter
 
-    //  private ConnectionManager mConnectionService = new ConnectionManager(this);
+    //  private ConnectionManager CONNECTION_SERVICE = new ConnectionManager(this);
     private final UUID mSharedUUID = UUID.fromString("00000000-0000-0000-0000-000000001101");
     private ConnectionManager mConnectionManager;
     private EBluetoothStates mBluetoothConnectionState;
