@@ -97,9 +97,7 @@ public class ManualControl extends AppCompatActivity {
     private HotspotConnectivityService mHotspotConnectivityService;
     private boolean mIsBoundToHotSpotService;
 
-    private boolean mIsConnectionManagerBinned;
     private boolean mIsSteeringServiceBinned;
-
 
     private TextView mSpeed;
     private TextView mRotation;
@@ -189,14 +187,6 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
-            try {
-                JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
-                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage());
-            }
-        }
     }
 
     @Override

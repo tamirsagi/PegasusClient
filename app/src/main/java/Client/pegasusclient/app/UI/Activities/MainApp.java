@@ -7,15 +7,22 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
+import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.UI.autonomous.activities.Autonomous;
 import client.pegasusclient.app.UI.manual.activities.ManualControl;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainApp extends AppCompatActivity {
+
+    private static final String TAG = MainApp.class.getSimpleName();
+    private static final int DEFAULT_VALUE = -1;
 
     private ImageButton mBthAbout;
     private ImageButton mBthSettings;
@@ -30,6 +37,8 @@ public class MainApp extends AppCompatActivity {
     //hotspot service
     private HotspotConnectivityService mHotspotConnectivityService;
     private boolean mHashHotspotServiceStarted;
+
+    private int lastVehicleMode = DEFAULT_VALUE;
 
 
     @Override
@@ -125,6 +134,14 @@ public class MainApp extends AppCompatActivity {
      */
     public void onButtonManualClicked(View view) {
         if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
+          if(lastVehicleMode != MessageKeys.VEHICLE_MODE_MANUAL) {
+              try {
+                  JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
+                  CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+              } catch (JSONException e) {
+                  Log.e(TAG, e.getMessage());
+              }
+          }
             Intent manualControl = new Intent(this, ManualControl.class);
             startActivity(manualControl);
 
@@ -140,6 +157,14 @@ public class MainApp extends AppCompatActivity {
      */
     public void onButtonAutonomousClicked(View view) {
         if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
+            if(lastVehicleMode != MessageKeys.VEHICLE_MODE_AUTONOMOUS) {
+                try {
+                    JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
+                    CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+                } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }
             Intent autonomous_intent = new Intent(this, Autonomous.class);
             startActivity(autonomous_intent);
         }else{
