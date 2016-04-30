@@ -135,6 +135,7 @@ public class MainApp extends AppCompatActivity {
     public void onButtonManualClicked(View view) {
         if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
           if(lastVehicleMode != MessageKeys.VEHICLE_MODE_MANUAL) {
+              lastVehicleMode = MessageKeys.VEHICLE_MODE_MANUAL;
               try {
                   JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
                   CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
@@ -158,6 +159,7 @@ public class MainApp extends AppCompatActivity {
     public void onButtonAutonomousClicked(View view) {
         if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
             if(lastVehicleMode != MessageKeys.VEHICLE_MODE_AUTONOMOUS) {
+                lastVehicleMode = MessageKeys.VEHICLE_MODE_AUTONOMOUS;
                 try {
                     JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
                     CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
