@@ -139,7 +139,7 @@ public class MainApp extends AppCompatActivity {
      * @param view
      */
     public void onButtonAutonomousClicked(View view) {
-        if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice()) || true) {
+        if (CONNECTION_SERVICE != null && (mIsConnectedToPegasus = CONNECTION_SERVICE.isConnectedToRemoteDevice())) {
             Intent autonomous_intent = new Intent(this, Autonomous.class);
             startActivity(autonomous_intent);
         }else{

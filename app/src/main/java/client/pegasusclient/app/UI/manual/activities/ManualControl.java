@@ -22,6 +22,7 @@ import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.BL.Services.SteeringService;
+import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
 import client.pegasusclient.app.UI.Fragments.PegasusCamera;
 import client.pegasusclient.app.UI.Helper.MyAlerts;
@@ -90,9 +91,7 @@ public class ManualControl extends AppCompatActivity {
     private RadioGroup mDrivingDirectionRadioGroup;
 
     ////////////////// SERVICES \\\\\\\\\\\\\\\\\\\\\\\\
-    private Intent mConnectionManagerServiceIntent;
     private Intent mSteeringServiceIntent;
-    private ConnectionService mConnectionService;
     private SteeringService mSteeringService;
 
     private HotspotConnectivityService mHotspotConnectivityService;
@@ -125,7 +124,6 @@ public class ManualControl extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manual_control);
-        createBinnedConnectionManagerService();
         createBinnedSteeringService();
 
         Typeface mLedFont = Typeface.createFromAsset(getAssets(),
@@ -175,11 +173,6 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-        if (mIsConnectionManagerBinned) {
-            unbindService(BluetoothServiceConnection);
-            mIsConnectionManagerBinned = false;
-        }
-
         if (mIsSteeringServiceBinned) {
             mSteeringService.unregisterListener();
             mSteeringService.unregisterHandler(TAG);
@@ -196,6 +189,14 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
+            try {
+                JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
+                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -206,11 +207,8 @@ public class ManualControl extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        if (!mIsConnectionManagerBinned) {
-            createBinnedConnectionManagerService();
-        }
-        if (mConnectionService != null) {
-            if (!mConnectionService.isConnectedToRemoteDevice()) {
+            if (MainApp.CONNECTION_SERVICE != null) {
+            if (!MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
                 MyAlerts.showAlertDialog(getApplicationContext());
             } else if (!mIsSteeringServiceBinned) {
                 createBinnedSteeringService();
@@ -296,47 +294,6 @@ public class ManualControl extends AppCompatActivity {
     /**
      *            #####  Services ######
      */
-
-
-    /**
-     * to Bluetooth Connection Manager Service
-     */
-    private void createBinnedConnectionManagerService() {
-        mConnectionManagerServiceIntent = new Intent(ManualControl.this, ConnectionService.class);
-        bindService(mConnectionManagerServiceIntent, BluetoothServiceConnection, Context.BIND_AUTO_CREATE);
-        mIsConnectionManagerBinned = true;
-        if (mConnectionService != null) {
-            if (!mConnectionService.isConnectedToRemoteDevice()) {
-                MyAlerts.showAlertDialog(getApplicationContext());
-            }else{
-                try {
-                    JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_MANUAL);
-                    mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
-                } catch (JSONException e) {
-                    Log.e(TAG,e.getMessage());
-                }
-            }
-        }
-    }
-
-    /**
-     * bind to service
-     */
-    private ServiceConnection BluetoothServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            ConnectionService.MyLocalBinder connectionManager = (ConnectionService.MyLocalBinder) service;
-            mConnectionService = connectionManager.gerService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            if (mIsConnectionManagerBinned) {
-                getApplication().unbindService(BluetoothServiceConnection);
-                mIsConnectionManagerBinned = false;
-            }
-        }
-    };
 
 
     /**
@@ -504,8 +461,8 @@ public class ManualControl extends AppCompatActivity {
             messageToServer.put(MessageKeys.KEY_MESSAGE_TYPE, MessageKeys.MESSAGE_TYPE_ACTION);
             messageToServer.put(MessageKeys.KEY_VEHICLE_ACTION_TYPE, MessageKeys.MESSAGE_TYPE_ACTION_CHANGE_DIRECTION);
             messageToServer.put(ActionKeys.KEY_DRIVING_DIRECTION, drivingDirection.toString());
-            if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
+            if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice())
+                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
@@ -538,8 +495,8 @@ public class ManualControl extends AppCompatActivity {
             messageToServer.put(MessageKeys.KEY_MESSAGE_TYPE, MessageKeys.MESSAGE_TYPE_ACTION);
             messageToServer.put(MessageKeys.KEY_VEHICLE_ACTION_TYPE, MessageKeys.MESSAGE_TYPE_ACTION_CHANGE_SPEED);
             messageToServer.put(ActionKeys.KEY_DIGITAL_SPEED, digitalSpeed);
-            if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
+            if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice())
+                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
@@ -568,8 +525,8 @@ public class ManualControl extends AppCompatActivity {
             else
                 rotation -= STRAIGHT_STEERING_ANGLE;
             messageToServer.put(ActionKeys.KEY_ROTATION_ANGLE, rotation);
-            if (mConnectionService.isConnectedToRemoteDevice())
-                mConnectionService.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
+            if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice())
+                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(messageToServer.toString()));
         } catch (JSONException e) {
 
         }
