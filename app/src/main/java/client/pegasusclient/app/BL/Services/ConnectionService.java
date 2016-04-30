@@ -5,9 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.os.Binder;
-import android.os.Handler;
-import android.os.IBinder;
+import android.os.*;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -212,12 +210,12 @@ public class ConnectionService extends Service implements onMessageReceivedListe
 
     @Override
     public void onMessageReceived(String receivedMessage) {
-        try {
-            JSONObject jsonFromString = new JSONObject(receivedMessage);
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
+        for (String key : handlers.keySet()) {
+            Message msg = new Message();
+            Bundle data = new Bundle();
+            data.putString(MessageKeys.KEY_INCOMING_MESSAGE, receivedMessage);
+            msg.setData(data);
+            handlers.get(key).handleMessage(msg);
         }
     }
 
@@ -232,7 +230,6 @@ public class ConnectionService extends Service implements onMessageReceivedListe
         private IBluetoothSocketWrapper bluetoothSocket;
         private UUID mUUID;
         private onMessageReceivedListener mListener;
-
 
 
         public ConnectionManager() {

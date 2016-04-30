@@ -110,8 +110,9 @@ public class VehicleMode extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 Bundle data = msg.getData();
+                String incoming = data.getString(MessageKeys.KEY_INCOMING_MESSAGE);
                 try {
-                    JSONObject json_data = General.convertBundleToJson(data);
+                    JSONObject json_data = new JSONObject(incoming);
                     String messageType = json_data.getString(MessageKeys.KEY_MESSAGE_TYPE);
                     if (messageType.equals(MessageKeys.KEY_RECEIVED_MESSAGE_TYPE_LOG)) {
                         VehicleLog vl = new VehicleLog(json_data);
@@ -135,15 +136,15 @@ public class VehicleMode extends AppCompatActivity {
     private void handleRealTimeData(JSONObject aJsonObject) throws JSONException {
         int dataType = aJsonObject.getInt(AutonomousMessageParam.JSON_KEY_REAL_TIME_DATA_TYPE);
         switch (dataType){
-            case AutonomousMessageParam.JSON_REAL_TIME_TYPE_DISTANCE:
+            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_DISTANCE:
                 double currentDistance = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_DISTANCE);
                 setDistance(currentDistance);
                 break;
-            case AutonomousMessageParam.JSON_REAL_TIME_TYPE_SPEED:
+            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_SPEED:
                 double currentSpeed = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_SPEED);
                 setSpeed(currentSpeed);
                 break;
-            case AutonomousMessageParam.JSON_REAL_TIME_TYPE_SENSOR:
+            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_SENSOR:
                 break;
         }
     }

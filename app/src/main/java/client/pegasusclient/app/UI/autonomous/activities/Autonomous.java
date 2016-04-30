@@ -53,18 +53,15 @@ public class Autonomous extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if (MainApp.CONNECTION_SERVICE != null) {
-            if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
-                try {
-                    JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
-                    MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+        if (MainApp.CONNECTION_SERVICE.isConnectedToRemoteDevice()) {
+            try {
+                JSONObject msg = MessageKeys.getVehicleModeMessage(MessageKeys.VEHICLE_MODE_AUTONOMOUS);
+                MainApp.CONNECTION_SERVICE.sendMessageToRemoteDevice(MessageKeys.getProtocolMessage(msg.toString()));
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
     }
-
 
 
     @Override

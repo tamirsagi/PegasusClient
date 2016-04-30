@@ -39,7 +39,9 @@ public class MessageKeys {
     public static final int  AUTONOMOUS_MODE_FIND_PARKING = 1;
 
     public static final String KEY_RECEIVED_MESSAGE_TYPE_LOG = "log";
-    public static final String KEY_RECEIVED_MESSAGE_TYPE_REAL_TIME_DATA = "rtd";
+    public static final String KEY_RECEIVED_MESSAGE_TYPE_REAL_TIME_DATA = "real_time_data";
+
+    public static final String KEY_INCOMING_MESSAGE = "incoming_msg";
 
     /**
      * Method add $ and # according to the protocol before and after the message
