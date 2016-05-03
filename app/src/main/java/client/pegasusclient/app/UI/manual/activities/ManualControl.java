@@ -13,13 +13,11 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import client.pegasusclient.app.BL.common.constants.MessageKeys;
-import client.pegasusclient.app.BL.Services.ConnectionService;
 import client.pegasusclient.app.BL.Services.HotspotConnectivityService;
 import client.pegasusclient.app.BL.Services.SteeringService;
 import client.pegasusclient.app.UI.Activities.MainApp;
@@ -45,7 +43,7 @@ public class ManualControl extends AppCompatActivity {
 
 
     public enum DrivingDirection {
-        FORWARD(0), REVERSE(1);
+        FORWARD(0), BACKWARD(1);
 
         private int value;
 
@@ -60,7 +58,7 @@ public class ManualControl extends AppCompatActivity {
     ///////////////////////////////// Steering Consts \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     private static final double MIN_RANGE_A = 90;                              //At 90 Degree Speed gets 0 (int digital)
-    private static final double MAX_RANGE_A = 74;                               //at 75 inclination speed gets 100(in digital)
+    private static final double MAX_RANGE_A = 74;                              //at 75 inclination speed gets 100(in digital)
     private static final double MIN_DIGITAL_SPEED_RANGE_A = 60;
     private static final double MAX_DIGITAL_SPEED_RANGE_A = 100;
     private static final double MIN_RANGE_B = 75;                            //at 75 inclination speed gets 100(in digital)
@@ -93,9 +91,6 @@ public class ManualControl extends AppCompatActivity {
     ////////////////// SERVICES \\\\\\\\\\\\\\\\\\\\\\\\
     private Intent mSteeringServiceIntent;
     private SteeringService mSteeringService;
-
-    private HotspotConnectivityService mHotspotConnectivityService;
-    private boolean mIsBoundToHotSpotService;
 
     private boolean mIsSteeringServiceBinned;
 
@@ -143,8 +138,8 @@ public class ManualControl extends AppCompatActivity {
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mHotspotConnectivityService != null){
-                    if(mHotspotConnectivityService.isConnectedToPegasusCamera()){
+                if(MainApp.mHotspotConnectivityService != null){
+                    if(MainApp.mHotspotConnectivityService.isConnectedToPegasusCamera()){
                         initializeDraggablePanel();
                         mDraggablePanel.setVisibility(View.VISIBLE);
                         mDraggablePanel.initializeView();
@@ -177,11 +172,7 @@ public class ManualControl extends AppCompatActivity {
             unbindService(SteeringServiceConnection);
             mIsSteeringServiceBinned = false;
         }
-
-        if(mIsBoundToHotSpotService){
-            unbindService(hotspotConnectivityService);
-            mIsBoundToHotSpotService = false;
-        }
+        sendDigitalSpeedToServer(0);
     }
 
     @Override
@@ -203,9 +194,6 @@ public class ManualControl extends AppCompatActivity {
             } else if (!mIsSteeringServiceBinned) {
                 createBinnedSteeringService();
             }
-        }
-        if(!mIsBoundToHotSpotService){
-            createBinnedHotspotConnectivityServiceService();
         }
     }
 
@@ -231,7 +219,7 @@ public class ManualControl extends AppCompatActivity {
                         break;
 
                     case R.id.manual_control_direction_reverse:
-                        mLastDrivingDirection = DrivingDirection.REVERSE;
+                        mLastDrivingDirection = DrivingDirection.BACKWARD;
                         mDrivingDirection.setText("R");
                         break;
                 }
@@ -312,43 +300,6 @@ public class ManualControl extends AppCompatActivity {
             mIsSteeringServiceBinned = false;
         }
     };
-
-
-
-    /**
-     * Bind to Hotspot Connection Manager Service
-     */
-    private void createBinnedHotspotConnectivityServiceService() {
-        Intent intent = new Intent(this, HotspotConnectivityService.class);
-        bindService(intent, hotspotConnectivityService, Context.BIND_AUTO_CREATE);
-        mIsBoundToHotSpotService = true;
-    }
-
-    /**
-     * Create the service instance
-     */
-    private ServiceConnection hotspotConnectivityService = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            HotspotConnectivityService.MyLocalBinder hotspotConnectivityService = (HotspotConnectivityService.MyLocalBinder) service;
-            mHotspotConnectivityService = hotspotConnectivityService.gerService();
-            try{
-                mHotspotConnectivityService.registerHandler(mMessagesHandler);
-                //   mHotspotConnectivityService.connectToPegasusAP();
-            }catch (Exception e){
-                Log.e(TAG,e.getMessage());
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            if (mIsBoundToHotSpotService) {
-                unbindService(hotspotConnectivityService);
-                mIsBoundToHotSpotService = false;
-            }
-        }
-    };
-
 
 
     /**
@@ -442,7 +393,7 @@ public class ManualControl extends AppCompatActivity {
     /**
      * method sends driving direction when its changed
      *
-     * @param drivingDirection - drivign direction (FORWARD , REVERSE);
+     * @param drivingDirection - drivign direction (FORWARD , BACKWARD);
      */
     private void sendDrivingDirection(DrivingDirection drivingDirection) {
 

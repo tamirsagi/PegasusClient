@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.TextView;
-import client.pegasusclient.app.BL.Util.General;
 import client.pegasusclient.app.BL.common.constants.MessageKeys;
 import client.pegasusclient.app.UI.Activities.MainApp;
 import client.pegasusclient.app.UI.Activities.R;
@@ -17,8 +16,6 @@ import client.pegasusclient.app.UI.autonomous.constants.AutonomousMessageParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
-
 /**
  * Created by Tamir on 4/29/2016.
  */
@@ -27,8 +24,7 @@ public class VehicleMode extends AppCompatActivity {
     private static final String TAG = VehicleMode.class.getSimpleName();
     private static final String AUTONOMOUS_MODE_AUTO_DRIVE = "Auto Drive";
     private static final String AUTONOMOUS_MODE_FIND_PARKING = "Find Parking";
-
-    private DecimalFormat DECIMAL_FORMATTER =  new DecimalFormat(".##");
+    private static final double CM_TO_METER_RATIO = 0.01;
 
     private TextView mVehicleMode;
     private TextView mCurrentSpeed;
@@ -48,6 +44,7 @@ public class VehicleMode extends AppCompatActivity {
         mVehicleMode = (TextView) findViewById(R.id.autonomous_mode);
         Bundle extra = getIntent().getExtras();
         setMode(extra.getInt(MessageKeys.KEY_AUTONOMOUS_MODE));
+
         mCurrentSpeed = (TextView) findViewById(R.id.current_speed_value);
 
         mTotalDistance = (TextView) findViewById(R.id.autonomous_distance_value);
@@ -97,12 +94,33 @@ public class VehicleMode extends AppCompatActivity {
         }
     }
 
-    private void setSpeed(double aSpeed) {
-        mCurrentSpeed.setText(String.format("%s (m/s)", DECIMAL_FORMATTER.format(aSpeed)));
+    private void setSpeed(final double aSpeed) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCurrentSpeed.setText(String.format("%s (m/s)", getProperDisplayedNumber(aSpeed)));
+            }
+        });
+
     }
 
-    private void setDistance(double aDistance) {
-        mTotalDistance.setText(String.format("%s (m)", DECIMAL_FORMATTER.format(aDistance)));
+    private void setDistance(final double aDistance) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTotalDistance.setText(String.format("%s (m)", getProperDisplayedNumber(aDistance)));
+            }
+        });
+    }
+
+    private String getProperDisplayedNumber(double aNumber){
+        String txt;
+        if(aNumber == 0){
+            txt= "0";
+        }else{
+            txt = String.format("%.2f",aNumber + 0.0);
+        }
+        return txt;
     }
 
     private void setHandler() {
@@ -134,18 +152,14 @@ public class VehicleMode extends AppCompatActivity {
      * @throws JSONException
      */
     private void handleRealTimeData(JSONObject aJsonObject) throws JSONException {
-        int dataType = aJsonObject.getInt(AutonomousMessageParam.JSON_KEY_REAL_TIME_DATA_TYPE);
-        switch (dataType){
-            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_DISTANCE:
-                double currentDistance = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_DISTANCE);
-                setDistance(currentDistance);
-                break;
-            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_SPEED:
-                double currentSpeed = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_SPEED);
-                setSpeed(currentSpeed);
-                break;
-            case AutonomousMessageParam.JSON_REAL_TIME_DATA_TYPE_SENSOR:
-                break;
+        if(aJsonObject.has(AutonomousMessageParam.JSON_KEY_DISTANCE)) {
+            double currentDistanceCM = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_DISTANCE);
+            double toMeter = currentDistanceCM * CM_TO_METER_RATIO;
+            setDistance(toMeter);
+        }
+        if(aJsonObject.has(AutonomousMessageParam.JSON_KEY_SPEED)) {
+            double currentSpeed = aJsonObject.getDouble(AutonomousMessageParam.JSON_KEY_SPEED);
+            setSpeed(currentSpeed);
         }
     }
 

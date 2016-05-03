@@ -35,7 +35,7 @@ public class MainApp extends AppCompatActivity {
     private boolean mIsConnectedToPegasus;
 
     //hotspot service
-    private HotspotConnectivityService mHotspotConnectivityService;
+    public static HotspotConnectivityService mHotspotConnectivityService;
     private boolean mHashHotspotServiceStarted;
 
     private int lastVehicleMode = DEFAULT_VALUE;
@@ -78,7 +78,7 @@ public class MainApp extends AppCompatActivity {
         createBinnedConnectionManagerService();
 
         //bind to wifi service
-        createBinnedHotspotConnectivityServiceService();
+       // createBinnedHotspotConnectivityServiceService();
     }
 
 
